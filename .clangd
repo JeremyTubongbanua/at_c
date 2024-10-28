@@ -1,0 +1,18 @@
+CompileFlags:
+  # Use gcc to compile for diagnostics
+  Compiler: gcc
+  # Ensure that compiles don't fail due to warnings during development
+  Add: [-Wno-error]
+
+Index:
+  # Enable background indexing for better symbol information
+  Background: Build
+
+Diagnostics:
+  # IWYU for header files
+  UnusedIncludes: Strict
+  MissingIncludes: Strict
+  # Avoid running slow clang-tidy checks
+  ClangTidy:
+    FastCheckFilter: Loose
+
