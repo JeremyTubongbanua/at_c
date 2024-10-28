@@ -1,7 +1,7 @@
 CompileFlags:
-  # Use gcc to compile for diagnostics
+  # Use gcc in development for better diagnostics
+  # & Ensure that compilation doesn't fail due to warnings
   Compiler: gcc
-  # Ensure that compiles don't fail due to warnings during development
   Add: [-Wno-error]
 
 Index:
