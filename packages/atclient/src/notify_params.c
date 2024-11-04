@@ -1,6 +1,7 @@
 #include "atclient/notify_params.h"
 #include "atchops/aes.h"
 #include <atlogger/atlogger.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -307,7 +308,7 @@ int atclient_notify_params_set_strategy(atclient_notify_params *params, const en
   return 0;
 }
 
-int atclient_notify_params_set_latest_n(atclient_notify_params *params, const int latest_n) {
+int atclient_notify_params_set_latest_n(atclient_notify_params *params, const int64_t latest_n) {
   params->latest_n = latest_n;
   atclient_notify_params_set_latest_n_initialized(params, true);
   return 0;
@@ -338,8 +339,7 @@ int atclient_notify_params_set_notifier(atclient_notify_params *params, const ch
 exit: { return ret; }
 }
 
-int atclient_notify_params_set_notification_expiry(atclient_notify_params *params,
-                                                   const unsigned long notification_expiry) {
+int atclient_notify_params_set_notification_expiry(atclient_notify_params *params, const uint64_t notification_expiry) {
   params->notification_expiry = notification_expiry;
   atclient_notify_params_set_notification_expiry_initialized(params, true);
   return 0;
