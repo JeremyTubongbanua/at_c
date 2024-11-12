@@ -15,15 +15,27 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Show gcc version
+        run: gcc --version
+
       - name: Install atsdk
-        run: |
-          cmake -S . -B build
-          sudo cmake --build build --target install
+        run: cmake -S . -B build -DCMAKE_C_COMPILER=gcc \
+          -DCMAKE_C_FLAGS="-Wall -Wextra -Werror-implicit-function-declaration" \
+          -DCMAKE_COMPILE_WARNING_AS_ERROR="on"
+
+      - name: Show CMake Cache Variables
+        run: cmake -L -N -S . -B build
+
+      - name: Build atsdk
+        run: cmake --build build
+
+      - name: Install atsdk
+        run: sudo cmake --build build --target install
 
       - name: Build sample_cmake_project
         working-directory: examples/desktop/sample_cmake_project
         run: |
-          cmake -S . -B build -Datsdk="/usr/local/bin/cmake/atsdk" -DCMAKE_C_COMPILER=gcc -DCMAKE_C_FLAGS="-Wall -Wextra -Werror-implicit-function-declaration"
+          cmake -S . -B build -Datsdk="/usr/local/bin/cmake/atsdk"
           cmake --build build
 
       - name: Run sample_cmake_project executable
