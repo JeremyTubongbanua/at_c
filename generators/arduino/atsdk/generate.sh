@@ -209,11 +209,6 @@ public_headers() {
   echo "includes=atsdk.h" >>$script_dir/library.properties
 }
 
-override_uuid() {
-  rm $src_base/uuid4_uuid4.c
-  cp $script_dir/uuid4.c.template $src_base/uuid4_uuid4.c
-}
-
 echo "Cleaning generated files and folders"
 clean
 
@@ -254,7 +249,6 @@ unset clean
 unset gen_src
 unset public_headers
 unset fix_rel_headers
-unset override_uuid
 
 # global variables
 unset script_dir
