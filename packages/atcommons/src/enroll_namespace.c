@@ -48,7 +48,7 @@ int atcommons_enroll_namespace_to_json(char *ns_str, const size_t ns_str_size, s
   return 0;
 }
 
-#if ATCLIENT_JSON_PROVIDER == ATCLIENT_JSON_PROVIDER_CJSON
+#ifdef ATCOMMONS_JSON_PROVIDER_CJSON
 int atcommons_enroll_namespace_list_to_json(char **ns_list_string, size_t *ns_list_str_len,
                                             const atcommons_enroll_namespace_list_t *ns_list) {
   if (ns_list == NULL) {
@@ -85,10 +85,5 @@ int atcommons_enroll_namespace_list_to_json(char **ns_list_string, size_t *ns_li
 }
 
 #else
-int atcommons_enroll_namespace_list_to_json(char **ns_list_string, size_t *ns_list_str_len,
-                                            const atcommons_enroll_namespace_list_t *ns_list) {
-  atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR,
-               "atcommons_enroll_namespace_list_to_json is not implemented for provider %d\n", ATCLIENT_JSON_PROVIDER);
-  return 1;
-}
+#error "JSON provider not supported"
 #endif
