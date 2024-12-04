@@ -1,6 +1,6 @@
 #include "atcommons/enroll_params.h"
 
-#include "cJSON.h"
+#include "atcommons/json.h"
 
 #include <atlogger/atlogger.h>
 #include <stddef.h>
@@ -37,6 +37,7 @@ int atcommons_enroll_params_init(atcommons_enroll_params_t *ep) {
   return 0;
 }
 
+#if ATCLIENT_JSON_PROVIDER == ATCLIENT_JSON_PROVIDER_CJSON
 int atcommons_enroll_params_to_json(char **json_string, size_t *json_string_len, const atcommons_enroll_params_t *ep) {
   int ret = 0;
 
@@ -116,3 +117,10 @@ exit:
   cJSON_Delete(json_object);
   return ret;
 }
+#else
+int atcommons_enroll_params_to_json(char **json_string, size_t *json_string_len, const atcommons_enroll_params_t *ep) {
+  atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR,
+               "atcommons_enroll_params_to_json is not implemented for provider %d\n", ATCLIENT_JSON_PROVIDER);
+  return 1;
+}
+#endif
