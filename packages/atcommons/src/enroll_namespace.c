@@ -1,6 +1,6 @@
 #include "atcommons/enroll_namespace.h"
 
-#include "cJSON.h"
+#include "atcommons/json.h"
 
 #include <stdio.h>
 #include <stdlib.h>
