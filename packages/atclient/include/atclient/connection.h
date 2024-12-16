@@ -30,23 +30,21 @@ typedef enum atclient_connection_type {
 
 typedef struct atclient_connection {
   atclient_connection_type type; // set in atclient_connection_init
-
+  uint16_t port;                 // example: 64
   bool _is_host_initialized : 1;
-  char *host; // example: "root.atsign.org"
-
   bool _is_port_initialized : 1;
-  uint16_t port; // example: 64
+  bool _is_connection_enabled : 1;
+  bool _is_hooks_enabled : 1;
+
+  char *host; // example: "root.atsign.org"
 
   // atclient_connection_connect sets this to true and atclient_connection_disconnect sets this to false
   // this does not mean that the connection is still alive, it just means that the connection was established at least
   // once, at some  point, check atclient_connection_is_connected for a live status on the connection
   // _is_connection_enabled also serves as an internal boolean to check if the following mbedlts contexts have been
   // initialized and need to be freed at the end
-  bool _is_connection_enabled : 1;
 
   struct atclient_tls_socket _socket;
-
-  bool _is_hooks_enabled : 1;
   atclient_connection_hooks *hooks;
 } atclient_connection;
 
