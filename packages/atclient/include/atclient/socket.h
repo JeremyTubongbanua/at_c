@@ -10,6 +10,22 @@
 extern "C" {
 #endif
 
+#ifndef ATCLIENT_SSL_TIMEOUT_EXITCODE
+
+#if defined(ATCLIENT_SOCKET_PROVIDER_MBEDTLS)
+#define ATCLIENT_SSL_TIMEOUT_EXITCODE MBEDTLS_ERR_SSL_TIMEOUT
+
+#elif defined(ATCLIENT_SOCKET_PROVIDER_ARDUINO_BEARSSL)
+// Most arduino libraries only use -1 or positive integers
+#define ATCLIENT_SSL_TIMEOUT_EXITCODE -101
+
+#else
+#error "ATCLIENT_ERR_SSL_TIMEOUT is undefined"
+
+#endif
+
+#endif
+
 // IWYU pragma: begin_exports
 
 // Export the appropriate platform specific struct implementation

@@ -1,5 +1,5 @@
-// IWYU pragma: private, include "atclient/net_socket.h"
-// IWYU pragma: friend "net_socket_mbedtls.*"
+// IWYU pragma: private, include "atclient/socket.h"
+// IWYU pragma: friend "socket_mbedtls.*"
 #ifndef ATCLIENT_SOCKET_SHARED_H
 #define ATCLIENT_SOCKET_SHARED_H
 #include <stddef.h>

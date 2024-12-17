@@ -111,20 +111,17 @@ int atclient_monitor_read(atclient *monitor_conn, atclient *atclient, atclient_m
   size_t buffer_len;
 
   int ret = atclient_tls_socket_read(&monitor_conn->atserver_connection._socket, &buffer, &buffer_len,
-                                     atclient_socket_read_until_char('@'));
+                                     atclient_socket_read_until_char('\n'));
 
-  // TODO: move this later for now it's fine as it should
-  if (ret == MBEDTLS_ERR_SSL_TIMEOUT) {
+  if (ret == ATCLIENT_SSL_TIMEOUT_EXITCODE) {
     // treat a timeout as empty message, non error
     message->type = ATCLIENT_MONITOR_MESSAGE_TYPE_EMPTY;
     ret = 0;
     goto exit;
-  }
-
-  if (ret <= 0) { // you should reconnect...
+  } else if (ret != 0) { // you should reconnect...
     message->type = ATCLIENT_MONITOR_ERROR_READ;
     message->error_read.error_code = ret;
-    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_DEBUG, "Read nothing from the monitor connection: %d\n", ret);
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_DEBUG, "Error: monitor exited with code %d\n", ret);
     goto exit;
   }
 

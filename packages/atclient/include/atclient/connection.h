@@ -1,7 +1,7 @@
 /*
  *
  * The connection family of types and methods represents a single connection to
- * if you want a pure socket representation see net_socket.h.
+ * if you want a pure socket representation see socket.h.
  *
  * At the moment _socket represents a singular tcp socket, but in the future it may be altered
  * to be a union of different connection types, such as a websocket or other construct.

@@ -1,6 +1,7 @@
 // These two headers must be included in a specific order
 #include "atchops/platform.h" // IWYU pragma: keep
 // Don't move them
+#include "atclient/monitor.h"
 #include "atclient/socket.h"
 
 #if defined(ATCLIENT_SOCKET_PROVIDER_MBEDTLS)
@@ -273,96 +274,6 @@ int atclient_tls_socket_read(struct atclient_tls_socket *socket, unsigned char *
     return 4;
   }
 }
-// int atclient_tls_socket_read_num_bytes(struct atclient_tls_socket *socket, unsigned char **value, size_t *value_len,
-//                                        size_t num_bytes) {
-//   // Assume params have been validated by socket_read
-//   int ret;
-//   unsigned char *recv = NULL;
-//   size_t blocks = 0; // number of allocated blocks
-//
-//   do {
-//     size_t offset = READ_BLOCK_LEN * blocks; // offset to current block
-//     // Allocate memory
-//     unsigned char *temp = realloc(recv, sizeof(unsigned char) * (offset + READ_BLOCK_LEN));
-//     if (temp == NULL) {
-//       atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to allocate receive buffer\n");
-//       if (recv != NULL) {
-//         free(recv);
-//       }
-//       return 1;
-//     }
-//     recv = temp; // once we ensure realloc was successful we set recv to the new memory
-//
-//     // Read into current block
-//     size_t pos = 0; // position in current block
-//     do {
-//       size_t remaining_for_block;
-//       if (READ_BLOCK_LEN + offset > num_bytes) {
-//         // We are in the final block, so only read the amount that will make
-//         // us reach num_bytes
-//         remaining_for_block = num_bytes - (offset + pos);
-//       } else {
-//         remaining_for_block = READ_BLOCK_LEN - pos;
-//       }
-//
-//       ret = mbedtls_ssl_read(&socket->ssl, recv + offset + pos, remaining_for_block);
-//       if (ret > 0) {
-//         pos += ret; // successful read, increment pos
-//
-//         if (offset + pos == num_bytes) {
-//           *value = recv;
-//           *value_len = (offset + pos);
-//           return 0; // The only return where recv should not be freed
-//         }
-//
-//         continue; // not done reading yet
-//       }
-//
-//       // handle non-happy path
-//       switch (ret) {
-//       case 0:                                 // connection is closed
-//       case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY: // connection is closed
-//         atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Socket closed while reading: %d\n", ret);
-//         ret = MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY; // ensure ret val is not 0
-//         free(recv);
-//         return ret;
-//       case MBEDTLS_ERR_SSL_WANT_READ:          // handshake incomplete
-//       case MBEDTLS_ERR_SSL_WANT_WRITE:         // handshake incomplete
-//       case MBEDTLS_ERR_SSL_ASYNC_IN_PROGRESS:  // async operation in progress
-//       case MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS: // crypto operation in progress
-//                                                // async error, we need to try again
-//         break;
-//       case MBEDTLS_ERR_SSL_TIMEOUT: // treat a timeout as
-//
-//         if (value != NULL) {
-//           *value = recv;
-//         } else {
-//           free(recv);
-//         }
-//        if (value_len != NULL) {
-//           *value_len = (offset + pos);
-//         }
-//         return 0; // The only return where recv should not be freed
-//         // unexpected errors while reading
-//       default:
-//         if (ret > 0) {
-//           atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Unexpected read value %d\n", ret);
-//         } else {
-//           char strerr[512];
-//           mbedtls_strerror(ret, strerr, 512);
-//           atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "%s", strerr);
-//         }
-//         free(recv);
-//         return ret;
-//       } // don't put anything after switch without checking it first
-//     } while (pos < READ_BLOCK_LEN);
-//     blocks++;
-//   } while (blocks < MAX_READ_BLOCKS);
-//   // We should only arrive at this point if we max out blocks
-//   // Every other code path should return early
-//   atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to read within the maximum allowed number of read
-//   blocks\n"); free(recv); return 1;
-// }
 
 int atclient_tls_socket_read_until_char(struct atclient_tls_socket *socket, unsigned char **value, size_t *value_len,
                                         char until_char) {
@@ -409,6 +320,7 @@ int atclient_tls_socket_read_until_char(struct atclient_tls_socket *socket, unsi
         continue;   // continue if not found char yet
       }
       // handle non-happy path
+      atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_DEBUG, "Socket read error: %d\n", ret);
       switch (ret) {
       case 0:                                 // connection is closed
       case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY: // connection is closed
@@ -428,7 +340,7 @@ int atclient_tls_socket_read_until_char(struct atclient_tls_socket *socket, unsi
         if (timeout_count == MAX_READ_TIMEOUTS) {
           atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_DEBUG, "Failed to read the full message after %d attempts\n",
                        MAX_READ_TIMEOUTS);
-          return ret;
+          return ATCLIENT_SSL_TIMEOUT_EXITCODE;
         }
         usleep(1000);
         break;
