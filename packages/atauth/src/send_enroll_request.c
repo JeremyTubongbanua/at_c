@@ -13,16 +13,18 @@
 
 #define TAG "send_enroll_request"
 
-int atauth_send_enroll_request(atclient *client, const atcommons_enroll_params_t *ep, char *enroll_id, char *enroll_status) {
+int atauth_validate_send_enroll_request_arguments(const atclient *client, const atcommons_enroll_params_t *ep,
+                                                  const char *enroll_id, const char *enroll_status);
+
+int atauth_send_enroll_request(atclient *client, const atcommons_enroll_params_t *ep, char *enroll_id,
+                               char *enroll_status) {
   int ret = 0;
-  const size_t recv_size = 100; // to hold the response for enroll request
+  const size_t recv_size = 300; // to hold the response for enroll request
   unsigned char recv[recv_size];
   char *recv_trimmed = NULL;
   size_t recv_len;
 
-  if (enroll_id == NULL) {
-    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "enroll_id is unallocated\n");
-    ret = -1;
+  if ((ret = atauth_validate_send_enroll_request_arguments(client, ep, enroll_id, enroll_status)) != 0) {
     goto exit;
   }
 
@@ -103,7 +105,7 @@ int atauth_send_enroll_request(atclient *client, const atcommons_enroll_params_t
   }
   strncpy(enroll_status, enroll_status_cjson->valuestring, strlen(enroll_status_cjson->valuestring));
   enroll_status[strlen(enroll_status_cjson->valuestring)] = '\0';
-
+  atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_INFO, "Enrollment request sent successfully\n");
   ret = 0;
 
 cjson_delete_exit:
@@ -111,5 +113,33 @@ cjson_delete_exit:
 free_command_exit:
   free(command);
 exit:
+  return ret;
+}
+
+int atauth_validate_send_enroll_request_arguments(const atclient *client, const atcommons_enroll_params_t *ep,
+                                                  const char *enroll_id, const char *enroll_status) {
+  int ret = 0;
+
+  if (client == NULL) {
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "atclient is null\n");
+    ret = -1;
+    return ret;
+  }
+  if (ep == NULL) {
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "ep(enroll_params) is null\n");
+    ret = -1;
+    return ret;
+  }
+  if (enroll_id == NULL) {
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "enroll_id is unallocated\n");
+    ret = -1;
+    return ret;
+  }
+  if (enroll_status == NULL) {
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "enroll_status is unallocated\n");
+    ret = -1;
+    return ret;
+  }
+
   return ret;
 }

@@ -1,6 +1,7 @@
 #ifndef ATCOMMONS_ENROLL_NAMESPACE_H
 #define ATCOMMONS_ENROLL_NAMESPACE_H
 
+#include <atlogger/atlogger.h>
 #include <stddef.h>
 
 typedef struct {
@@ -12,6 +13,14 @@ typedef struct {
   size_t length;
   atcommons_enroll_namespace_t *namespaces[];
 } atcommons_enroll_namespace_list_t;
+
+/**
+ * @brief intializes the provided atcommons_enroll_namespace_list_t struc
+ *
+ * @param ns_list pointer to the namespace list struct that needs to be initialized
+ * @return int 0 on success, non-zero int on failure
+ */
+int atcommmons_init_enroll_namespace_list(atcommons_enroll_namespace_list_t *ns_list);
 
 /**
  * @brief serializes enroll_namespace struct to JSON string
@@ -58,5 +67,14 @@ int atcommons_enroll_namespace_list_to_json(char **ns_list_string, size_t *ns_li
  */
 int atcommons_enroll_namespace_list_append(atcommons_enroll_namespace_list_t **ns_list,
                                            atcommons_enroll_namespace_t *ns);
+
+/**
+ * @brief Parses a namespace list string and populates these namespaces into the enroll_namespace_list_t struct provided
+ *
+ * @param ns_list Double pointer to a enroll_namespace_list_t struct which would hold the list of namespaces
+ * @param json_str The namespace list string that is to be parsed. (Expected format: "ns1:rw,ns2:r")
+ * @return int 0 on success, non-zero int on failure
+ */
+int atcommons_enroll_namespace_list_from_string(atcommons_enroll_namespace_list_t **ns_list, char *json_str);
 
 #endif

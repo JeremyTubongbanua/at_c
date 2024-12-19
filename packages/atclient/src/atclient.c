@@ -189,7 +189,7 @@ bool atclient_is_atsign_initialized(const atclient *ctx) {
 }
 
 int atclient_pkam_authenticate(atclient *ctx, const char *atsign, const atclient_atkeys *atkeys,
-                               atclient_authenticate_options *options) {
+                               atclient_authenticate_options *options, char **err_msg) {
 
   int ret = 1; // error by default
 
@@ -328,8 +328,8 @@ int atclient_pkam_authenticate(atclient *ctx, const char *atsign, const atclient
   char *str_with_data_prefix = NULL;
   if (atclient_string_utils_get_substring_position((char *)recv, ATCLIENT_DATA_TOKEN, &str_with_data_prefix) != 0) {
     ret = 1;
-    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "recv was \"%.*s\" and did not have prefix \"data:\"\n",
-                 (int)recv_len, recv);
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "recv: \"%.*s\" \n", (int)recv_len, recv);
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_DEBUG, "recv did not have prefix \"data:\"\n");
     goto exit;
   }
 
@@ -391,6 +391,10 @@ int atclient_pkam_authenticate(atclient *ctx, const char *atsign, const atclient
     ret = 1;
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "recv was \"%.*s\" and did not have prefix \"data:success\"\n",
                  (int)recv_len, recv);
+
+    if (*err_msg != NULL) {
+      *err_msg = (char *)recv;
+    }
     goto exit;
   }
 
@@ -742,7 +746,7 @@ static int atclient_pkam_authenticate_validate_arguments(const atclient *ctx, co
     goto exit;
   }
 
-  if (NULL == atsign || strlen(atsign) == 0) {
+  if (atsign == NULL || strlen(atsign) == 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "atsign is NULL or the length is 0\n");
     goto exit;
   }

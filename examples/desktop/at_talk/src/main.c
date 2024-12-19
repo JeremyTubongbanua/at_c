@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
   pthread_mutex_lock(&client_mutex);
   atclient_authenticate_options options;
   atclient_authenticate_options_init(&options);
-  if ((ret = atclient_pkam_authenticate(&atclient1, from_atsign, &atkeys, &options)) != 0) {
+  if ((ret = atclient_pkam_authenticate(&atclient1, from_atsign, &atkeys, &options, NULL)) != 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "\natclient_pkam_authenticate: %d\n", ret);
     goto exit;
   }
@@ -342,7 +342,7 @@ static int reconnect_clients(atclient *monitor, atclient *ctx, const char *atser
   atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_DEBUG, "Reconnecting client connection...\n");
   atclient_authenticate_options options;
   atclient_authenticate_options_init(&options);
-  if ((ret = atclient_pkam_authenticate(ctx, from_atsign, atkeys, &options)) != 0) {
+  if ((ret = atclient_pkam_authenticate(ctx, from_atsign, atkeys, &options, NULL)) != 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "atclient_pkam_authenticate: %d\n", ret);
     return ret;
   }

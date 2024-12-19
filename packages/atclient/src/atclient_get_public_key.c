@@ -35,7 +35,7 @@ int atclient_get_public_key(atclient *atclient, atclient_atkey *atkey, char **va
   size_t recv_len = 0;
 
   cJSON *root = NULL;
-  char *plookup_cmd = NULL;
+  char *lookup_cmd = NULL;
   char *metadata_str = NULL;
 
   /*
@@ -48,6 +48,7 @@ int atclient_get_public_key(atclient *atclient, atclient_atkey *atkey, char **va
 
   char *atkey_str_without_public = NULL;
   char *ptr = strstr(atkey_str, "public:");
+
   if (ptr != NULL) {
     atkey_str_without_public = ptr + strlen("public:");
   } else {
@@ -56,27 +57,31 @@ int atclient_get_public_key(atclient *atclient, atclient_atkey *atkey, char **va
     goto exit;
   }
 
-  const bool bypass_cache = request_options != NULL &&
-                            atclient_get_public_key_request_options_is_bypass_cache_initialized(request_options) &&
+  const bool bypass_cache = atclient_get_public_key_request_options_is_bypass_cache_initialized(request_options) &&
                             request_options->bypass_cache;
+  // use plookup verb if atclient instance is authenticated (or) lookup verb otherwise
+  // if the atsign var is set in the atclient instance, that is considered authenticated
+  const bool authenticated_lookup = atclient->atsign == NULL ? false : true;
+  char *verb = authenticated_lookup ? "plookup" : "lookup";
 
-  const size_t plookup_cmd_size = strlen("plookup:all:\r\n") + (bypass_cache ? strlen("bypassCache:true:") : 0) +
-                                  strlen(atkey_str_without_public) + 1;
-  if ((plookup_cmd = malloc(sizeof(char) * plookup_cmd_size)) == NULL) {
+  const size_t lookup_cmd_size = strlen(verb) + strlen(":all:\r\n") + (bypass_cache ? strlen("bypassCache:true:") : 0) +
+                                 strlen(atkey_str_without_public) + 1;
+
+  if ((lookup_cmd = malloc(sizeof(char) * lookup_cmd_size)) == NULL) {
     ret = 1;
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to allocate memory for plookup_cmd\n");
     goto exit;
   }
-  memset(plookup_cmd, 0, plookup_cmd_size);
-  snprintf(plookup_cmd, plookup_cmd_size, "plookup:%sall:%s\r\n", bypass_cache ? "bypassCache:true:" : "",
+  memset(lookup_cmd, 0, lookup_cmd_size);
+  snprintf(lookup_cmd, lookup_cmd_size, "%s:%sall:%s\r\n", verb, bypass_cache ? "bypassCache:true:" : "",
            atkey_str_without_public);
-  const size_t cmdbufferlen = strlen(plookup_cmd);
+  const size_t cmdbufferlen = strlen(lookup_cmd);
 
   /*
    * 4. Send `plookup:` command
    */
-  if ((ret = atclient_connection_send(&(atclient->atserver_connection), (unsigned char *)plookup_cmd, cmdbufferlen,
-                                      recv, recv_size, &recv_len)) != 0) {
+  if ((ret = atclient_connection_send(&(atclient->atserver_connection), (unsigned char *)lookup_cmd, cmdbufferlen, recv,
+                                      recv_size, &recv_len)) != 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "atclient_connection_send: %d\n", ret);
     goto exit;
   }
@@ -84,10 +89,9 @@ int atclient_get_public_key(atclient *atclient, atclient_atkey *atkey, char **va
   /*
    * 5. Parse response
    */
-  char *response = (char *)recv;
   char *response_trimmed = NULL;
   // below method points the response_trimmed variable to the position of 'data:' substring
-  if (atclient_string_utils_get_substring_position(response, ATCLIENT_DATA_TOKEN, &response_trimmed) != 0) {
+  if (atclient_string_utils_get_substring_position((char *)recv, ATCLIENT_DATA_TOKEN, &response_trimmed) != 0) {
     ret = 1;
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "recv was \"%.*s\" and did not have prefix \"data:\"\n",
                  (int)recv_len, recv);
@@ -126,7 +130,7 @@ int atclient_get_public_key(atclient *atclient, atclient_atkey *atkey, char **va
 
     metadata_str = cJSON_Print(metadata);
 
-    if ((ret = atclient_atkey_metadata_from_json_str(&(atkey->metadata), metadata_str)) != 0) {
+    if ((ret = atclient_atkey_metadata_from_json_str(&atkey->metadata, metadata_str)) != 0) {
       atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "atclient_atkey_metadata_from_json_str: %d\n", ret);
       goto exit;
     }
@@ -143,13 +147,12 @@ int atclient_get_public_key(atclient *atclient, atclient_atkey *atkey, char **va
   }
 
   ret = 0;
-  goto exit;
 exit: {
   if (root != NULL) {
     cJSON_Delete(root);
   }
   free(metadata_str);
-  free(plookup_cmd);
+  free(lookup_cmd);
   free(atkey_str);
   return ret;
 }
@@ -168,12 +171,6 @@ static int atclient_get_public_key_validate_arguments(const atclient *atclient, 
   if (!atclient_is_atserver_connection_started(atclient)) {
     ret = 1;
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "atserver connection not started\n");
-    goto exit;
-  }
-
-  if (!atclient_is_atsign_initialized(atclient)) {
-    ret = 1;
-    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "atsign not initialized\n");
     goto exit;
   }
 

@@ -1,5 +1,6 @@
 #include "atauth/atactivate_arg_parser.h"
 #include "atauth/atauth_build_atkeys_file_path.h"
+#include "atauth/atauth_constants.h"
 #include "atchops/base64.h"
 #include "atclient/atclient.h"
 #include "atclient/atkeys.h"
@@ -11,20 +12,16 @@
 #include <atcommons/enroll_status.h>
 #include <atlogger/atlogger.h>
 
+#include <atclient/string_utils.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define TAG "atactivate"
-#define DEFAULT_FIRST_APP_NAME "firstApp"
-#define DEFAULT_FIRST_DEVICE_NAME "firstDevice"
-#define AES_256_KEY_BYTES 32
-#define RSA_2048_PRIVKEY_BYTES 1300 // in PKCS#8 format includes padding
+#define TAG "activate_cli"
 
 int main(int argc, char *argv[]) {
-  atlogger_set_logging_level(ATLOGGER_LOGGING_LEVEL_INFO);
   int ret = 0;
-  char *atsign = NULL, *cram_secret = NULL, *root_host = NULL, *atkeys_fp = NULL, *otp = NULL;
-  int *root_port = NULL;
+  char *atsign_temp = NULL, *cram_secret = NULL, *root_host = NULL, *atkeys_fp = NULL, *otp = NULL;
+  int root_port = 0;
   char enrollment_id[ENROLL_ID_MAX_LEN];
   char status[ATCOMMONS_ENROLL_STATUS_STRING_MAX_LEN];
 
@@ -33,7 +30,7 @@ int main(int argc, char *argv[]) {
 
   // initialize apkam symmetric key and self encryption key (bytes)
   unsigned char *self_encryption_key_bytes, *apkam_symmetric_key_bytes;
-  size_t aes256_key_unsigned_char_bytes_size = sizeof(unsigned char) * AES_256_KEY_BYTES;
+  size_t aes256_key_unsigned_char_bytes_size = sizeof(unsigned char) * ATAUTH_AES_256_KEY_BYTES;
   self_encryption_key_bytes = malloc(aes256_key_unsigned_char_bytes_size);
   apkam_symmetric_key_bytes = malloc(aes256_key_unsigned_char_bytes_size);
 
@@ -44,7 +41,7 @@ int main(int argc, char *argv[]) {
   unsigned char *apkam_symmetric_key_base64 = malloc(aes256_key_unsigned_char_base64_size);
 
   // intialize encrypted APKAM symmetric Key and encrypted default encryption private key (bytes)
-  const size_t rsa_2048_privkey_base64_len = atchops_base64_encoded_size(RSA_2048_PRIVKEY_BYTES);
+  const size_t rsa_2048_privkey_base64_len = atchops_base64_encoded_size(ATAUTH_RSA_2048_PRIVKEY_BYTES);
   const size_t aes256_encrypted_rsa_privkey_size = atchops_aes_ctr_ciphertext_size(
       rsa_2048_privkey_base64_len); // size for an AES256 encrypted RSA2048 privkey in bytes
   const size_t aes256_encrypted_rsa_privkey_unsigned_char_size =
@@ -53,8 +50,9 @@ int main(int argc, char *argv[]) {
       aes_key_base64_size); // size of AES256 key encrypted with another AES256 key(bytes)
   const size_t aes256_encrypted_aes256_key_unsigned_char_size =
       sizeof(unsigned char) * aes256_encrypted_aes256_key_size;
-  unsigned char *encrypted_default_encryption_private_key = malloc(aes256_encrypted_rsa_privkey_unsigned_char_size);
-  unsigned char *encrypted_self_encryption_key = malloc(aes256_encrypted_aes256_key_unsigned_char_size);
+  unsigned char *encrypted_default_encryption_private_key_bytes =
+      malloc(aes256_encrypted_rsa_privkey_unsigned_char_size);
+  unsigned char *encrypted_self_encryption_key_bytes = malloc(aes256_encrypted_aes256_key_unsigned_char_size);
 
   // intialize base64 encoded encrypted APKAM symmetric Key and encrypted default encryption private key
   const size_t aes256_encrypted_rsa_2048_privkey_base64_len = atchops_base64_encoded_size(rsa_2048_privkey_base64_len);
@@ -94,13 +92,13 @@ int main(int argc, char *argv[]) {
     ret = -1;
     goto aes_keys_bytes_exit;
   }
-  if (encrypted_default_encryption_private_key == NULL) {
+  if (encrypted_default_encryption_private_key_bytes == NULL) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR,
                  "Could not allocate mem for encrypted_default_encryption_private_key buffer\n");
     ret = -1;
     goto aes_keys_bytes_exit;
   }
-  if (encrypted_self_encryption_key == NULL) {
+  if (encrypted_self_encryption_key_bytes == NULL) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR,
                  "Could not allocate mem for encrypted_self_encryption_key buffer\n");
     ret = -1;
@@ -129,8 +127,8 @@ int main(int argc, char *argv[]) {
   memset(apkam_symmetric_key_bytes, 0, aes256_key_unsigned_char_bytes_size);
   memset(self_encryption_key_base64, 0, aes256_key_unsigned_char_base64_size);
   memset(apkam_symmetric_key_base64, 0, aes256_key_unsigned_char_base64_size);
-  memset(encrypted_default_encryption_private_key, 0, aes256_encrypted_rsa_privkey_unsigned_char_size);
-  memset(encrypted_self_encryption_key, 0, aes256_encrypted_aes256_key_unsigned_char_size);
+  memset(encrypted_default_encryption_private_key_bytes, 0, aes256_encrypted_rsa_privkey_unsigned_char_size);
+  memset(encrypted_self_encryption_key_bytes, 0, aes256_encrypted_aes256_key_unsigned_char_size);
   memset(encrypted_default_encryption_private_key_base64, 0,
          sizeof(unsigned char) * aes256_encrypted_rsa_2048_privkey_base64_len);
   memset(encrypted_self_encryption_key_base64, 0, sizeof(unsigned char) * aes256_encrypted_aes_key_base64_len);
@@ -139,10 +137,20 @@ int main(int argc, char *argv[]) {
   /*
    * 1. Parse args
    */
-  if ((ret = atactivate_parse_args(argc, argv, &atsign, &cram_secret, &otp, &atkeys_fp, &root_host, root_port)) != 0) {
+  if ((ret = atactivate_parse_args(argc, argv, &atsign_temp, &cram_secret, &otp, &atkeys_fp, NULL, NULL, NULL,
+                                   &root_host, &root_port)) != 0) {
     goto exit;
   }
-  // 1.1 if atkeys filepath was not passed through args, build default atkeys file path
+
+  // 1.1 Ensure atsign starts with '@'
+  char *atsign = NULL;
+  if ((ret = atclient_string_utils_atsign_with_at(atsign_temp, &atsign)) != 0) {
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "atclient_string_utils_atsign_with_at: %d\n", ret);
+    goto exit;
+  }
+  free(atsign_temp); // no longer needed
+
+  // 1.2 if atkeys filepath was not passed through args, build default atkeys file path
   if (atkeys_fp == NULL) {
     if ((ret = atauth_build_atkeys_file_path(&atkeys_fp, atsign)) != 0) {
       atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Could not build atkeys filepath\n");
@@ -243,11 +251,11 @@ int main(int argc, char *argv[]) {
    * 4. Encrypt the keys and send the onboarding enrollment request
    */
   // 4.1 Encrypt default_encryption_private_key with APKAM Symmetric Key
-  size_t encrypted_def_encrypt_private_key_len = 0;
+  size_t encrypted_def_encrypt_private_key_bytes_len = 0;
   if ((ret = atchops_aes_ctr_encrypt(
            apkam_symmetric_key_bytes, ATCHOPS_AES_256, iv, encrypt_private_key_base64,
-           strlen((char *)encrypt_private_key_base64), encrypted_default_encryption_private_key,
-           aes256_encrypted_rsa_privkey_unsigned_char_size, &encrypted_def_encrypt_private_key_len)) != 0) {
+           strlen((char *)encrypt_private_key_base64), encrypted_default_encryption_private_key_bytes,
+           aes256_encrypted_rsa_privkey_unsigned_char_size, &encrypted_def_encrypt_private_key_bytes_len)) != 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "AES encrypt default_encryption_private_key failed | ret: %d\n",
                  ret);
     goto def_enc_keypair_free_exit;
@@ -255,7 +263,8 @@ int main(int argc, char *argv[]) {
 
   // 4.1.1 Base64 encode the encrypted_default_encryption_private_key
   size_t encrypted_default_encryption_private_key_base64_len = 0;
-  if ((ret = atchops_base64_encode(encrypted_default_encryption_private_key, encrypted_def_encrypt_private_key_len,
+  if ((ret = atchops_base64_encode(encrypted_default_encryption_private_key_bytes,
+                                   encrypted_def_encrypt_private_key_bytes_len,
                                    encrypted_default_encryption_private_key_base64,
                                    sizeof(unsigned char) * aes256_encrypted_rsa_2048_privkey_base64_len,
                                    &encrypted_default_encryption_private_key_base64_len)) != 0) {
@@ -265,18 +274,18 @@ int main(int argc, char *argv[]) {
   }
 
   // 4.2 Encrypt self_encryption_key with APKAM Symmetric Key
-  size_t encrypted_self_encrypt_key_len = 0;
+  size_t encrypted_self_encrypt_key_bytes_len = 0;
   if ((ret = atchops_aes_ctr_encrypt(apkam_symmetric_key_bytes, ATCHOPS_AES_256, iv, self_encryption_key_base64,
-                                     strlen((const char *)self_encryption_key_base64), encrypted_self_encryption_key,
+                                     strlen((char *)self_encryption_key_base64), encrypted_self_encryption_key_bytes,
                                      aes256_encrypted_aes256_key_unsigned_char_size,
-                                     &encrypted_self_encrypt_key_len)) != 0) {
+                                     &encrypted_self_encrypt_key_bytes_len)) != 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "AES encrypt self_encryption_key failed\tret: %d\n", ret);
     goto def_enc_keypair_free_exit;
   }
 
   // 4.2.1 Base64 encode the encrypted_self_encryption_key
   size_t encrypted_self_encryption_key_base64_len = 0;
-  if ((ret = atchops_base64_encode(encrypted_self_encryption_key, encrypted_self_encrypt_key_len,
+  if ((ret = atchops_base64_encode(encrypted_self_encryption_key_bytes, encrypted_self_encrypt_key_bytes_len,
                                    encrypted_self_encryption_key_base64,
                                    sizeof(unsigned char) * aes256_encrypted_aes_key_base64_len,
                                    &encrypted_self_encryption_key_base64_len)) != 0) {
@@ -287,8 +296,8 @@ int main(int argc, char *argv[]) {
 
   // 4.3 Initialize enrollment params
   atcommons_enroll_params_init(ep);
-  ep->app_name = DEFAULT_FIRST_APP_NAME;
-  ep->device_name = DEFAULT_FIRST_DEVICE_NAME;
+  ep->app_name = ATAUTH_DEFAULT_FIRST_APP_NAME;
+  ep->device_name = ATAUTH_DEFAULT_FIRST_DEVICE_NAME;
   ep->apkam_public_key = (unsigned char *)atkeys.pkam_public_key_base64;
   ep->encrypted_default_encryption_private_key = encrypted_default_encryption_private_key_base64;
   ep->encrypted_self_encryption_key = encrypted_self_encryption_key_base64;
@@ -312,7 +321,7 @@ int main(int argc, char *argv[]) {
   /*
    * 6. Perform PKAM auth
    */
-  if ((ret = atclient_pkam_authenticate(&at_client, atsign, &atkeys, &options)) != 0) {
+  if ((ret = atclient_pkam_authenticate(&at_client, atsign, &atkeys, &options, NULL)) != 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "PKAM auth failed | atclient_pkam_authenticate: %d\n", ret);
     goto atclient_exit;
   }
@@ -330,7 +339,7 @@ int main(int argc, char *argv[]) {
   }
   atclient_atkey_metadata_set_is_public(&def_enc_pub_atkey.metadata, true);
 
-  if ((ret = atclient_put_public_key(&at_client, &def_enc_pub_atkey, atkeys.encrypt_private_key_base64, NULL, NULL)) !=
+  if ((ret = atclient_put_public_key(&at_client, &def_enc_pub_atkey, atkeys.encrypt_public_key_base64, NULL, NULL)) !=
       0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR,
                  "Failed to updating enc_public_key to server | atclient_put_public_key: %d\n", ret);
@@ -393,8 +402,8 @@ args_exit: {
 enroll_params_exit: { free(ep); }
 enc_self_enc_key_base64_exit: { free(encrypted_self_encryption_key_base64); }
 enc_def_enc_privkey_base64_exit: { free(encrypted_default_encryption_private_key_base64); }
-enc_self_enc_key_exit: { free(encrypted_self_encryption_key); }
-enc_def_enc_privkey_exit: { free(encrypted_default_encryption_private_key); }
+enc_self_enc_key_exit: { free(encrypted_self_encryption_key_bytes); }
+enc_def_enc_privkey_exit: { free(encrypted_default_encryption_private_key_bytes); }
 aes_keys_bytes_exit: { free(apkam_symmetric_key_bytes); }
 self_enc_key_bytes_exit: { free(self_encryption_key_bytes); }
 iv_exit: { free(iv); }
