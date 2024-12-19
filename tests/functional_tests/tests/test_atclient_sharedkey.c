@@ -161,8 +161,9 @@ static int test_2_get_as_sharedby(atclient *atclient) {
     goto exit;
   }
 
-  if((ret = atclient_get_shared_key_request_options_set_store_atkey_metadata(&request_options, true)) != 0) {
-    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "atclient_get_shared_key_request_options_set_store_atkey_metadata: %d\n", ret);
+  if ((ret = atclient_get_shared_key_request_options_set_store_atkey_metadata(&request_options, true)) != 0) {
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR,
+                 "atclient_get_shared_key_request_options_set_store_atkey_metadata: %d\n", ret);
     goto exit;
   }
 
@@ -224,8 +225,9 @@ static int test_3_get_as_sharedwith(atclient *atclient2) {
     goto exit;
   }
 
-  if((ret = atclient_get_shared_key_request_options_set_store_atkey_metadata(&request_options, true)) != 0) {
-    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "atclient_get_shared_key_request_options_set_store_atkey_metadata: %d\n", ret);
+  if ((ret = atclient_get_shared_key_request_options_set_store_atkey_metadata(&request_options, true)) != 0) {
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR,
+                 "atclient_get_shared_key_request_options_set_store_atkey_metadata: %d\n", ret);
     goto exit;
   }
 
