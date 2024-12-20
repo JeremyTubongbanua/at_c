@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 struct atserver_message {
-  const char *buffer;
+  char *buffer;
   // metadata about buffer
   // len: length of the buffer
   // prompt: is `@` || `@<atsign>@` portion
@@ -23,15 +23,14 @@ struct atserver_message {
   // body_len = len - prompt_len - token_len
 };
 
-const char *atserver_message_get_prompt(struct atserver_message message);
-const char *atserver_message_get_token(struct atserver_message message);
-const char *atserver_message_get_body(struct atserver_message message);
-
-uint8_t atserver_message_get_prompt_len(struct atserver_message message);
-uint8_t atserver_message_get_token_len(struct atserver_message message);
 uint16_t atserver_message_get_body_len(struct atserver_message message);
 
+const char *atserver_message_get_prompt(struct atserver_message message);
+const char *atserver_message_get_token(struct atserver_message message);
+char *atserver_message_get_body(struct atserver_message message);
+
 struct atserver_message atserver_message_parse(char *buffer, uint16_t len);
+void atserver_message_free(struct atserver_message *message);
 
 #ifdef __cplusplus
 }

@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Build atSDK
         run: |
-          cmake -S . -B build -DATSDK_BUILD_TESTS="unit"
+          cmake -S . -B build -DATSDK_BUILD_TESTS="unit" -DCMAKE_BUILD_TYPE="Debug"
           cmake --build build --target all
 
       - name: atchops Unit CTest
