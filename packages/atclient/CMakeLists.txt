@@ -30,6 +30,9 @@ set(
   ${CMAKE_CURRENT_LIST_DIR}/src/notify_params.c
   ${CMAKE_CURRENT_LIST_DIR}/src/request_options.c
   ${CMAKE_CURRENT_LIST_DIR}/src/string_utils.c
+  # protected files
+  ${CMAKE_CURRENT_LIST_DIR}/src/atserver_message.h
+  ${CMAKE_CURRENT_LIST_DIR}/src/atserver_message.c
 )
 
 # Project setup
