@@ -12,5 +12,5 @@ RUN apt-get install -y git-core \
 
 WORKDIR /mnt/at_c
 
-CMD [ "just", "memcheck" ]
+CMD [ "tail", "-f", "/dev/null" ]
 

@@ -57,11 +57,12 @@ test-func: build-test-func
 test-all: build-test-all
   ctest --test-dir $PWD/build/test-all
 
-memcheck: build-test-memcheck
-  ctest -T memcheck --test-dir $PWD/build/test-memcheck
+memcheck +ARGS='': build-test-memcheck
+  ctest -T memcheck --test-dir $PWD/build/test-memcheck {{ARGS}}
 
-memcheck-docker:
-  docker run --rm --platform linux/amd64 --mount type=bind,src=$PWD,dst=/mnt/at_c atc-memcheck-docker:latest
+memcheck-docker +ARGS='':
+  docker run --rm --platform linux/amd64 --mount type=bind,src=$PWD,dst=/mnt/at_c atc-memcheck-docker:latest \
+    just memcheck {{ARGS}}
 
 # CONFIGURE COMMANDS
 
