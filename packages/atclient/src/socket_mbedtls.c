@@ -334,6 +334,7 @@ int atclient_tls_socket_read_until_char(struct atclient_tls_socket *socket, unsi
                                                // async error, we need to try again
         break;
       case MBEDTLS_ERR_SSL_TIMEOUT:
+        free(recv);
         return ATCLIENT_SSL_TIMEOUT_EXITCODE;
         break;
         // unexpected errors while reading
