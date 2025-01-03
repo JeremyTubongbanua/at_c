@@ -12,9 +12,10 @@ int atactivate_parse_args(const int argc, char *argv[], char **atsign, char **cr
                           char **app_name, char **device_name, char **namespaces, char **root_host, int *root_port) {
   int ret = 0, opt = 0;
   char *root_fqdn = NULL;
-  const char *usage = "Usage: \n\tActivate: \t./atactivate -a atsign -c cram-secret [-k path_to_store_keysfile] [-r root-domain]"
-                      "\n\n\tNew enrollment: ./at_auth_cli -a atsign -s otp/spp -p app_name -d device_name -n "
-                      "namespaces(\"wavi:rw,buzz:r\") [-k path_to_store_keysfile] [-r root-domain]\n";
+  const char *usage =
+      "Usage: \n\tActivate: \t./atactivate -a atsign -c cram-secret [-k path_to_store_keysfile] [-r root-domain]"
+      "\n\n\tNew enrollment: ./at_auth_cli -a atsign -s otp/spp -p app_name -d device_name -n "
+      "namespaces(\"wavi:rw,buzz:r\") [-k path_to_store_keysfile] [-r root-domain]\n";
 
   // Parse command-line arguments
   while ((opt = getopt(argc, argv, "a:c:k:s:p:d:n:r:vh")) != -1) {
@@ -140,12 +141,12 @@ exit:
 }
 
 int parse_root_domain(const char *root_domain_string, char **root_host, int *root_port) {
-  if(root_domain_string == NULL) {
+  if (root_domain_string == NULL) {
     return 1;
   }
   *root_host = strdup(strtok((char *)root_domain_string, ":"));
   *root_port = atoi(strtok(NULL, ":"));
-  if(*root_host == NULL || root_port == NULL) {
+  if (*root_host == NULL || root_port == NULL) {
     return 1;
   }
   return 0;
