@@ -7,6 +7,8 @@ alias memd := memcheck-docker
 set dotenv-filename := "just.env"
 set dotenv-load
 
+# SETUP COMMANDS
+
 setup: configure-debug configure-test-func
   ln -s $PWD/build/debug/compile_commands.json $PWD
   ln -s $PWD/build/test-func/compile_commands.json $PWD/tests
@@ -19,8 +21,12 @@ clean:
   rm $PWD/compile_commands.json
   rm $PWD/tests/compile_commands.json
 
+# INSTALL COMMANDS
+
 install: build-debug
   cmake: --build $PWD/build/debug --target install
+
+# BUILD COMMANDS
 
 build-debug: configure-debug
   cmake --build $PWD/build/debug
@@ -40,6 +46,8 @@ build-test-all: configure-test-all
 build-test-memcheck: configure-test-memcheck
   cmake --build $PWD/build/test-memcheck
 
+# TEST COMMANDS
+
 test-unit: build-test-unit
   ctest --test-dir $PWD/build/test-unit
 
@@ -54,6 +62,8 @@ memcheck: build-test-memcheck
 
 memcheck-docker:
   docker run --rm --platform linux/amd64 --mount type=bind,src=$PWD,dst=/mnt/at_c atc-memcheck-docker:latest
+
+# CONFIGURE COMMANDS
 
 configure-debug:
   cmake -B $PWD/build/debug -S $PWD \
@@ -111,6 +121,8 @@ configure-test-memcheck:
     -DATSDK_MEMCHECK=ON \
     -DFIRST_ATSIGN="\"$FIRST_ATSIGN\"" \
     -DSECOND_ATSIGN="\"$SECOND_ATSIGN\""
+
+# DIAGNOSTIC COMMANDS
 
 show-env:
   echo "$FIRST_ATSIGN"
