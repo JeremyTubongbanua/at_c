@@ -6,18 +6,22 @@ extern "C" {
 
 #include <stddef.h>
 
+// you can change this value at compile time by using `-DATDIRECTORY_HOST="vip.ve.atsign.zone"` in the CMake configure command
 #ifndef ATDIRECTORY_HOST
 #define ATDIRECTORY_HOST "root.atsign.org"
 #endif
 
+// you can change this value at compile time by using `-DATDIRECTORY_PORT=64` in the CMake configure command
 #ifndef ATDIRECTORY_PORT
 #define ATDIRECTORY_PORT 64
 #endif 
 
+// you can change this value at compile time  by using `-DFIRST_ATSIGN="@alice🛠"` in the CMake configure command
 #ifndef FIRST_ATSIGN
 #define FIRST_ATSIGN "@12alpaca"
 #endif
 
+// you can change this value at compile time by using `-DSECOND_ATSIGN="@bob🛠"` in the CMake configure command
 #ifndef SECOND_ATSIGN
 #define SECOND_ATSIGN "@12snowboating"
 #endif
