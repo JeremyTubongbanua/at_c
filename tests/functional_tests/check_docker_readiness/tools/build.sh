@@ -5,3 +5,4 @@ cd "$SCRIPT_DIRECTORY"
 
 cd ..
 cmake -S . -B build
+cmake --build build
