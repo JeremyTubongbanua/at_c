@@ -45,8 +45,8 @@ jobs:
       - name: Start Virtual Environment
         working-directory: tests/functional_tests/tools/virtualenv
         run: |
-          apt-get update
-          apt-get install -y docker-compose
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
           ./start_virtualenv.sh
           sleep 1
           ./pkam_virtualenv.sh
