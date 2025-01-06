@@ -38,24 +38,29 @@ jobs:
           cp "@alice🛠_key.atKeys" ~/.atsign/keys/
           cp "@bob🛠_key.atKeys" ~/.atsign/keys/
 
-      - name: Start Virtual Environment
-        working-directory: tests/functional_tests/tools/virtualenv
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-          sudo ./start_virtualenv.sh
-          sleep 5
-          sudo ./pkam_virtualenv.sh
-          sleep 1
-
       - name: Add vip.ve.atsign.zone to /etc/hosts
         run: |
           echo "127.0.0.1 vip.ve.atsign.zone" | sudo tee -a /etc/hosts
 
+      - name: Start Virtual Environment
+        working-directory: tests/functional_tests/tools/virtualenv
+        run: |
+          apt-get update
+          apt-get install -y docker-compose
+          ./start_virtualenv.sh
+          sleep 1
+          ./pkam_virtualenv.sh
+      
+      - name: Build and Run Check Docker Readiness
+        working-directory: tests/functional_tests/check_docker_readiness
+        run: |
+          tools/build.sh
+          ./build/check_docker_readiness
+
       - name: Install atSDK
         run: |
           cmake -S . -B build -DATSDK_BUILD_TESTS="func" -DCMAKE_BUILD_TYPE=Debug -DFIRST_ATSIGN="\"@alice🛠\"" -DSECOND_ATSIGN="\"@bob🛠\"" -DATDIRECTORY_HOST="\"vip.ve.atsign.zone\"" -DATDIRECTORY_PORT=64
-          sudo cmake --build build --target install
+          cmake --build build
 
       - name: Run Functional Tests
         run: |
