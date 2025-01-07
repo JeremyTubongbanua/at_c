@@ -162,12 +162,12 @@ exit: {
 static int get_atkeys_path(const char *atsign, char **path) {
   struct passwd *pw = getpwuid(getuid());
   const char *homedir = pw->pw_dir;
-  const size_t kpathlen = strlen(homedir) + strlen("/.atsign/keys/") + strlen(atsign) + strlen("_key.atkeys") + 1;
-  *path = (char *)malloc(sizeof(char) * kpathlen);
+  const size_t path_size = strlen(homedir) + strlen("/.atsign/keys/") + strlen(atsign) + strlen("_key.atkeys") + 1;
+  *path = (char *)malloc(sizeof(char) * path_size);
   if (*path == NULL) {
     return 1;
   }
-  memset(*path, 0, sizeof(char) * kpathlen);
-  snprintf(*path, kpathlen, "%s/.atsign/keys/%s_key.atKeys", homedir, atsign);
+  memset(*path, 0, sizeof(char) * path_size);
+  snprintf(*path, path_size, "%s/.atsign/keys/%s_key.atKeys", homedir, atsign);
   return 0;
 }

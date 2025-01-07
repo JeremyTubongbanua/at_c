@@ -358,12 +358,12 @@ exit: {
 int functional_tests_get_atkeys_path(const char *atsign, char **path) {
   struct passwd *pw = getpwuid(getuid());
   const char *homedir = pw->pw_dir;
-  const size_t kpathlen = strlen(homedir) + strlen("/.atsign/keys/") + strlen(atsign) + strlen("_key.atkeys") + 1;
-  *path = (char *)malloc(sizeof(char) * kpathlen);
-  if (*path == NULL) {
-    return 1;
+  const size_t path_size = strlen(homedir) + strlen("/.atsign/keys/") + strlen(atsign) + strlen("_key.atkeys") + 1;
+  if ((*path = (char *)malloc(sizeof(char) * path_size)) == NULL) {
+    atleast_logger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to allocate memory for path\n");
+    return 1; // failed to allocate memory
   }
-  memset(*path, 0, sizeof(char) * kpathlen);
-  snprintf(*path, kpathlen, "%s/.atsign/keys/%s_key.atKeys", homedir, atsign);
+  memset(*path, 0, sizeof(char) * path_size);
+  snprintf(*path, path_size, "%s/.atsign/keys/%s_key.atKeys", homedir, atsign);
   return 0;
 }
