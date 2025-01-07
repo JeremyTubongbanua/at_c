@@ -118,11 +118,15 @@ int main() {
     goto exit;
   }
 
+  // Prepare to PKAM auth:
+
+  // > Populate atKeys
   if ((ret = atclient_atkeys_populate_from_path(&atkeys, path)) != 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to populate atkeys from path \"%s\"\n", path);
     goto exit;
   }
 
+  // > Set atDirectory host and port
   if ((ret = atclient_authenticate_options_set_atdirectory_host(&authenticate_options, VE_ATDIRECTORY_HOST)) != 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to set atdirectory host in authenticate options\n");
     goto exit;
@@ -133,6 +137,7 @@ int main() {
     goto exit;
   }
 
+  // PKAM Auth
   if ((ret = atclient_pkam_authenticate(&atclient, ATSIGN_WITH_AT, &atkeys, &authenticate_options, NULL)) != NULL) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to pkam authenticate to alice's atServer\n");
     goto exit;
