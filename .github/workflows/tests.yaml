@@ -55,7 +55,7 @@ jobs:
         working-directory: tests/functional_tests/check_docker_readiness
         run: |
           tools/build.sh
-          for i in {1..3}; do ./build/check_docker_readiness && break || sleep 1; done
+          for i in {1..3}; do ./build/check_docker_readiness && break || sleep 5; done
 
       - name: Install atSDK
         run: |
