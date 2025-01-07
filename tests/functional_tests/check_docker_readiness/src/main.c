@@ -138,7 +138,7 @@ int main() {
   }
 
   // PKAM Auth
-  if ((ret = atclient_pkam_authenticate(&atclient, ATSIGN_WITH_AT, &atkeys, &authenticate_options, NULL)) != NULL) {
+  if ((ret = atclient_pkam_authenticate(&atclient, ATSIGN_WITH_AT, &atkeys, &authenticate_options, NULL)) != 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to pkam authenticate to alice's atServer\n");
     goto exit;
   }
