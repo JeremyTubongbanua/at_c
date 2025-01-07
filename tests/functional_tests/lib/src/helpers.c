@@ -363,7 +363,6 @@ int functional_tests_get_atkeys_path(const char *atsign, char **path) {
   const char *homedir = pw->pw_dir;
   const size_t path_size = strlen(homedir) + strlen("/.atsign/keys/") + strlen(atsign) + strlen("_key.atkeys") + 1;
   if ((*path = (char *)malloc(sizeof(char) * path_size)) == NULL) {
-    atleast_logger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to allocate memory for path\n");
     return 1; // failed to allocate memory
   }
   memset(*path, 0, sizeof(char) * path_size);
