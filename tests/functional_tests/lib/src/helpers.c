@@ -9,30 +9,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pwd.h>
+#include <unistd.h>
 
 #define TAG "functional_tests_helpers"
 
 int functional_tests_set_up_atkeys(atclient_atkeys *atkeys, const char *atsign) {
   int ret = 1;
 
-  const size_t atkeyspathsize = 1024;
-  char atkeyspath[atkeyspathsize];
-  memset(atkeyspath, 0, atkeyspathsize);
-  size_t atkeyspathlen = 0;
+  char *path = NULL;
 
-  if ((ret = functional_tests_get_atkeys_path(atsign, strlen(atsign), atkeyspath, atkeyspathsize, &atkeyspathlen)) != 0) {
-    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to get atkeys_sharedwith path: %d\n", ret);
+  if((ret = functional_tests_get_atkeys_path(atsign, &path)) != 0) {
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to get atkeys path for atSign \"%s\"\n", atsign);
     goto exit;
   }
 
-  if ((ret = atclient_atkeys_populate_from_path(atkeys, atkeyspath)) != 0) {
+  if ((ret = atclient_atkeys_populate_from_path(atkeys, path)) != 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to populate atkeys_sharedwith from path: %d\n", ret);
     goto exit;
   }
 
   goto exit;
 
-exit: { return ret; }
+exit: { 
+  if(path != NULL) {
+    free(path);
+  }
+  return ret; }
 }
 
 int functional_tests_pkam_auth(atclient *atclient, atclient_atkeys *atkeys, const char *atsign) {
@@ -350,4 +353,17 @@ exit: {
   atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_INFO, "tear_down End (%d)\n", ret);
   return ret;
 }
+}
+
+int functional_tests_get_atkeys_path(const char *atsign, char **path) {
+  struct passwd *pw = getpwuid(getuid());
+  const char *homedir = pw->pw_dir;
+  const size_t kpathlen = strlen(homedir) + strlen("/.atsign/keys/") + strlen(atsign) + strlen("_key.atkeys") + 1;
+  *path = (char *)malloc(sizeof(char) * kpathlen);
+  if (*path == NULL) {
+    return 1;
+  }
+  memset(*path, 0, sizeof(char) * kpathlen);
+  snprintf(*path, kpathlen, "%s/.atsign/keys/%s_key.atKeys", homedir, atsign);
+  return 0;
 }
