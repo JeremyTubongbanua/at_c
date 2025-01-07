@@ -3,86 +3,82 @@
 #include <atclient/atkeys_file.h>
 #include <atlogger/atlogger.h>
 #include <string.h>
+#include <functional_tests/config.h>
 
 #define TAG "test_atkeys_write"
 
-#define ATKEYS_8INCANTEATER                                                                                            \
-  "{\"aesPkamPublicKey\":\"+Jp1VdQuMANVkktasZhnZ9UStUMW0JMnNNYAqXWhyMHDB1PQMpCMWDzAQwF+IdXlJ10Hx2Q6iz0bgDOi6PKj+"      \
-  "uxPIcYejBsHrKLNQsWru6eCj+ZmGG35K+BePqowbReP0FNp7eWlOxP8Ee9WEK0QDUPqhAZwN6dzqYoqsmdsfJbISqfj4sD+"                    \
-  "iunJ5l6zmMRguXpe9IOPLKsR42kqQCkV3uibw0xhNNarAeSZwbBstiJCUJAu59ks7DyL/HdWQcQnCFaLPZIZZGh6iLzJHUpf5dY2JTln/4vs/"      \
-  "DFxnhRKfM+TU2UzoESHKvcyJ1aAF9t1LeNc9nuEyqg+ZP5/"                                                                    \
-  "iIW81KKdioXFDxsrktpdlQDKrCGqA9+FtLRwHaf7FT2v+DHbLUwq4OFGymyrIhIl1DG9ktqvaJTX8W8LE+sRPsRUx2z1/"                      \
-  "hGSLQEDtiMakNKBhMr4pVv88jsdzqxdZ7MTEoa63Q//"                                                                        \
-  "L82SWBvOElbGUnQevVRj2cgLu1AhAK+y3PciChs0AGVm8S7UEtTU6Fo9w9Dn0Q==\",\"aesEncryptPublicKey\":\"+"                     \
-  "Jp1VdQuMANVkktasZhnZ9UStUMW0JMnNNYAqXWhyMHDB1PQMpCMWDzAQwF8Ear5HWcA7mkC1j403yOvl4K53LkLM8MCugsRmIDZQJWYssSvkpJ8Pmy" \
-  "LS7NCJ74OcC+mz1xF7/iBEDiRXPpOCKdSEW3v7GR/LY0WoJ4epj9GSc+zI9/P+OL7p+fplXKkxeNchUEbsP/"                               \
-  "3KI4L2n0GIB15xcGX5m9DJc31PfeC861qknVKScMDx8V0/GilzhZQRucjElq3VoNrCQ50kpe2XmIA/"                                     \
-  "a4VJXFO6+TNyztyizJ8LZOAJVwtj23Ncu0bcRiQGtclMcsqzmPZy68/a78gg8ibwISxl8H+FwEwjNhGmw7gnVaKAoqKvYZSPf/"                 \
-  "YSxyjwGuVI34o9fF0/120KAd38Qmhi9WrSbiLqWMIcJ04EftB2VL2/"                                                             \
-  "hCafEA4hnIAmtK7tYHQsCvc7hEmwo4TKbNyDYr0yGrPMJeJIgjFZW7RBEolgEVtovoQqXASAMnx/"                                       \
-  "sIUCi5+QkNm8S7UEtTU6Fo9w9Dn0Q==\",\"aesEncryptPrivateKey\":\"+"                                                     \
-  "Jp1UusVOA9WsWFlm5RlUYQO7EZu9uYjNMYKrHWxo8PMBXnlFpCUcTz2QwFTO7PsLUcM/"                                               \
-  "FJswRwZ2CW2oo7f1tc6IqI58Qo0laLeSYSSm7rPpbosIhSpDeJ8BY0Fb0/"                                                         \
-  "p72FW7MeoADaKPdUgF78RJCbVww99RrcSkp8nmUplfsD3Pqb4oMDghcDdww6quP9epUZ9k7PUVqUjtFBKDxNNysie921SPODhG+"                \
-  "6r9vJS6CNqeapA6MU12xzt6SZUZfU4LU+JHp8FfVRw89WIHUMAkMs8YhlD7dLG6C92iClNC9yETkULuUqbNL5reBWQQdFkJt8J9j6+"             \
-  "ldICb4URpKq9yKicsbL4FEUOzuNAuS2sgC+VPLWnv7FgYNvXaj6M4zebGWhLwJZ9xjKyExMe6SeCk8nzL6Kno39gSPVJP+"                     \
-  "o52UXWj2yreTFDsycBnsyttLntvW3E9Sc63oRJZqkULZDs6AvEQsq/"                                                             \
-  "UBS9CXmHKVA5uTVC8ZtprAgdKazNyfYVawsmAkJkwwrSKqedhx93ipmqmj5TTwIihQHanQ/RzGHwN5/"                                    \
-  "G1vj6axYYkob5KNNd3zMNTQ8LazXauMBqCe2bzP2CuFlyl7I82tA8Nsph3LQOgKgPgx/"                                               \
-  "uUbnhTDd1g+hKSf5AbJlZecaEsauCoD3x8Xaq4tMp2OKg0Ssde+d8I6tJP512XoltJfOc9G0U75tc6+doqWtpV8F+jfs1Iwxy/"                 \
-  "b9ctX7w1Tf2KdA0YQA1a1Me/"                                                                                           \
-  "vPGGk+E7MoRRHKKWh4WfAJj1G6ejOVELmFlsktOjgA1fxNKktXzTqmzv+RPh+"                                                      \
-  "zW5NtFKUIaDuYKZs09HrHTmdpG5qA5aarzIqotvzoJBEA2vNGKatJaEHmCV4EmS+DFKfU7PHNtw4aPf2pGidDPsaJuVFIDt1zKbdmkBvJXuC/"      \
-  "2erLMhIW26RiPnCVnQtfYFD5UqKG0/OqKCzsG6aHbJThNvkxoz0ut7VoOBh3q5T7Kpdd/HX3AbGWaG5Qk5UElo2/"                           \
-  "bwxqG92tPWgFJFWdb5NdZfOfAfEpd+MP6sZbc42DT/wQ6+swBnXMChTS5LUm1iNnnPYfoJcFB4WVPewtVZ3CxtftBqASSf1g2sZjFFv+Dg9nXZb/"   \
-  "+bn8dTCouDz8LhTW2SptAoYRL4zrr7T/EtboN7vIfB//"                                                                       \
-  "i5exnUMAruHta9uSs1eHZuamOyrsftV2+tCF8ZTj3ytiIp2vWTnMKaqVMzKgepuFOfjDyNmJcLJkAkSyS43eNVodm0TNmWOIri6cVI/"            \
-  "EbtzkBAiRkWoeyKiT9tgnIBR94elq25PJVYaeFX0eMRIK/vTFh5RLI5D8QgM00kqNocE/e4IH27BqQRh4RsbWdzg9JBL9LTX72SXYvA0i+Zb/"      \
-  "sy1eqOGsUfwE+0AMDgJsWAZQokRtNOtDhFScVM9UM/zZqPnnNJintRFeA0Og5LiokEdWQEQ7qDs48P1zJA42Ktv8qTsWHvGHKTTxLMMGnq/"        \
-  "dBTDD4BL6GgbpkaZqQ/"                                                                                                \
-  "eOBqfUW8v068oUg7GkddUfj4VKIcZJT2NGKEmVc6pq3WKaW3UG951yiYV0LONyEPB4mh20IbdU3r1PiIlII+sRiSmpZHk8u9/"                  \
-  "SGNUc50ZyWri58S4UhZGMNjrc7MC2NDiNqpk3AwUjNFsd0fWW4CkCk3t6i2qZ/"                                                     \
-  "qYFR2wDkFqLBbpqJjdbhFCHaRwMVoIU+2k8bTtg6UdTy7qKKAaeIHf3sZb6WsakOqb8Fu6kFOqUg1G9ImJkssA6V7EnWkWFkaDonAW7xSmKz1+"     \
-  "qazCLD1EdeYmtJZNn4zxg48IhyYv6+O/AA9J3Wpezkc3qOhV1HSjS1tV2/Zuu00BsJC+uPjF/"                                          \
-  "qI8ApvFKjgYb6JuztNr5eOuyjfPdfNFxNjqUo5DAMwZ2dkB1DS4H2eZPmnjo7p7gMNBJtQTKwknoW1mgaGgyKzMjyOdcMFtja4/"                \
-  "kgjdx71N938eGah/"                                                                                                   \
-  "MNxh6UlKOfmOHyEiHTrgPpVrbw7psQ5vREtrBUHDK2efqS4lStFjEsxyXZse8ebjJ2mdytPTD0jLps6izyTA+"                              \
-  "ariIFEOfhAFUyPPGfHl5wpkhMklfSh6Xsdb4Ru9t6eU4QcFQoO7/ZQKu6cyrt4a+zS6r7K4CMG3EN/"                                     \
-  "qItGp3XlZdWcICVRr13CgSAZFvudjvTADA+GgpviKbja0Z33N9TW2W/SAoU\",\"selfEncryptionKey\":\"ErES7LlWlIJAUEEwfvwqhjyi/"    \
-  "NvTQ964uojS8KYcHvI=\",\"@8incanteater\":\"ErES7LlWlIJAUEEwfvwqhjyi/"                                                \
-  "NvTQ964uojS8KYcHvI=\",\"apkamSymmetricKey\":\"Z7LAVzBhtBpkZHleFmINyPW2jTofBOph3oqaTipJWCE=\",\"enrollmentId\":"     \
-  "\"865839ed-856a-4c97-b475-7a8ead295f17\",\"aesPkamPrivateKey\":\"+"                                                 \
-  "Jp1UusjOA9WsWFlm5RlUYQO7EZu9uYjNMYKrHWxo8PMBX3lFpCUcDz2QwFTO7PsLUcMyDRtzwIZijG7qYO9/+o6FsYDpXM/"                    \
-  "lrrvfaGdjsWFtbBlFzPmVp5gOasMUEGu/0Vt//GtckGMJdNTHqQPLnzK6iZMJslNzuYznmlnR57qMYvulNf9h/PH7VqQpvpEhlx2iJ/"            \
-  "jTOIa5F4cGwRZ6MO24VJiXdzPCsGf0+kq6nAKRpwO2PlI9j2S/"                                                                 \
-  "3EucPddL2u3PJkvOnUO9aOWQzIi46klcj1M2PnyyiE7ukhcJOaqf1ghkH7TLbh2BEuGWMtYF8BY6UWKw60+"                                \
-  "PfB7gq65xbyti5jDMxw3iMpCqgPMrSedAoupvo5JDe7OGxm3hVXaBlxfztp5/"                                                      \
-  "EWMBBwf0Ri7qfiqU52siUhCRq4VGvdC7XbytjC0JwEcryceuun8rZnPg0vC9Bp4mrN2A98XCvHK0jXZLPSWHgW7ZUSBFmktljZKpvAtokgQCqD04Ow" \
-  "xAA5/Ripc5QvvYOSdhx93ipmqmj5TTwIq6Rzjv1+6yXHPNZ/"                                                                   \
-  "D8NjrbWde+avcYvRcwUwCQAFIFzed6YtyFMWJsc3vjnRwy4Iq3tUTGd9Et4w6vtgBlF6nCb/vFhIWk+ZdZt8kZrhkcsD2idaDpg617k23+cY98Yq6/" \
-  "mpKStkqcOR6BZtUfpFrD//D8QZswLxC9pRouw9yI8BstdJ4TBIK1ew23nHloQjTN+kyf2p/KiAWuaXeKjyXgfsEfRuKEx8GGgBS/"               \
-  "m2QuOwOdhtlnQcynwtHWwRumtbJT5Pd47023sTq/"                                                                           \
-  "6IsLkpcU8kabsEbMafr1K1ygs5be+"                                                                                      \
-  "3eOKZUwhh1MkxvsJO0SM8GCmCOV6gDbazCLtkPF31F99PAckNV08rIuPRGD2tx1y3oPaeMfuNB9zuwWZCTpri34EO5xnkELrSFBloo8JG8ye7eU28j" \
-  "kryXMjNFjUAd8HWD5GYJBAHlwxjcw75vXiixVnGRGZQk5UElownH/jimyjZcSCxAAGt4tfs6VPygUwhwwL/r7JziuGmNxSgPu9dC/UsLg2icKyLTk/" \
-  "7Ff63kZbQs2xJQflEARRCmpPN/"                                                                                         \
-  "oR2Lew89jaToHbSJiKToTN+"                                                                                            \
-  "geS4MVmwkIFgxnQ2EcLx0heQWpRmougCY1Ndo0fdQFrTA1Js7SMoytCN9t6GQ87vJq5m10q4v60Gt2kJEREmkko3v3BCSFFwJa9dO7b1dnMtKSQeUN" \
-  "mJcLJkAxTOh+QLRfLt0wXJNZ5lXl+ssX5sBixIlAk9iKs+7Txb+kGnNEB45X06N0eRSZIa+D07CZ5no4FJiqkvu9TE/idVjsbVVRXL/"            \
-  "3d3q3wiwRDta0aruxStvSs0pWWObXkweEW3UYqPvkWi0G14hLTQ/"                                                               \
-  "yw5ZraJYTvQJ7W1oUvfib1ESK8Mw2D1RI3nHKUjzc3W7xddTKDg7POfME1XmHMlFeB/"                                                \
-  "0Pfaxm+spSrChvGHKXyhvUuCay809fhnDc9GGt+83aNvU+7PJnNg/"                                                              \
-  "+89skbAizHJWZ3jl+"                                                                                                  \
-  "VLsbNMQifTMJl5dm5WxeoWu43Hi4WuMdG0tcN2rOyIdk3dfeJIJx3HkYTNK3fFhSXt6VkwjkIa5MGgv97rKkBt8Ho0MR0wo6MQVKHuMKVIkrh209kv" \
-  "fP8B8XiSie3+6/8iN+qd/trRKqWfKJtjdXIWcqd7pCwGnfkIzvZs65GZzG/"                                                        \
-  "gycur+7ZWQG4T5OPHEVILkzYoJsJIusJh1L45d0BFoleRKphGe90LEnxt3Pjl5PDjsBmuC2+ij+m+"                                      \
-  "7yi5cSGdoY5yf6C0gyrxjQvq7Yb8F3erHkO6obWPdiGFjEzeGjCKpcfGKyUcJWtiNkESsCPorvmfwkvWhDfCOTIEmI/"                        \
-  "m+H4kENxVVuLMb81UN9Lq2qwR5cI79BIzY1UVkmLwAPRdiYDG7oEIJzW1bdyCBrN/xbeYGHtbZ/"                                        \
-  "NcUtOQg69lD07OFs6sewWSih8H1p96cbBrgnQfDGIfB44IFzPlDi81XZSukQ9et4UqiJmQJuB39ldEhc0ho3Ne4ICOw/P99ygvsMhDg/"           \
-  "3UEBaT1IVQ6M8+HHg9KjA5ZlwDH3K7rLKxKoK17F0AMZBsSYa73eoGGKVWw7u+"                                                     \
-  "oCunTPuaSC2g5proxG4DwuspUdZLTc4V3FhiNJF3McjOKL0t4DHoWv5qAVAZQo99TW2W/SAoU\"}"
+#define ATSIGN "@alice🛠"
+#define ATKEYS_FILE_PATH_COPY "temp_key.atKeys"
 
-#define ATKEYS_8INCANTEATER_1_FILE_PATH "@8incanteater_key1.atKeys"
+#define ATKEYS_STRING_ALICE                                                                                            \
+  "{\"aesPkamPublicKey\":\"yYYhLRFIfqlz/"                                                                              \
+  "sGEiswbGO+MRdAWUZSJJeMyGqRVqxneJa3oaJrUtFQWkG17f3Hi6fDKDXB1iLNEmLDWBMxtE101U97rRaNo0wjG8qyazI/"                     \
+  "L2X5WVdBI6Qait7hFoPkjv7ea0zm5KDh+Y+17X5c7ipEpCxHLUMFbSRDSyOJmoE9Hz1DsYualY3fjxwBaXje9YzmOm3dYqM5ySxOVMA/Rt14sx9t/"  \
+  "7JFvfP8gcPFhIXti0cI1/suwvPaK7eG8Kf9tqtYy7vGjnZlgC3J9yLAsoDzyq2tMv4hflvINmkBOtCK71bu1R9rZ0Y9jiqs/wN1WX3WLQ/"         \
+  "dsg0fsRep/amtGjTrHmV0BT79Qn2vVFb8mvAdCy8PVSYhT6A3anLipsyTSxcH1fdsmPMEup/"                                           \
+  "OWI8dkrcBaalA15B2xp0l5ASiqCE7vvrulzmqL+thl5R755v53tWV5SBUOJw5DIGFhG2gU356PCv2brVGLvFS+Cu1VP3Y1VOUJtdWEQqE+mlB/"     \
+  "IjA3jwGwqVelvrTcuSOI4dCO+Q==\",\"aesPkamPrivateKey\":\"yYYhKi5FdqVw3eu7oMAZLr6QHNVud+"                              \
+  "GNJfM4H6RFwBvRJ4PdTJrMnFQgkG1dIWzo2sPkDFZgoINplJfZDo9kNUBla8DKLoEx6xP5nLmav4XCxjcJYNEA916fqp965t4StZe42ySIJBNDZIJY" \
+  "KJZT6PwRQQSjfJNDCgjKnp16s1Iytx74IdmYQiOG9W1qJDqPEz/vhDR8mfMSa3LYeyTSyn4by+0xm5t3Rt0OFfVqL2hM/"                      \
+  "Nhow8OR2dilvZKBFORI8ZMg7/SntJ1oI2lZyIkV2Q3qrnp7tZZdjO02yV09wTaFm6SPB/"                                              \
+  "jA4ZVCvaRKhcE3a06COORlt02tWsENTnhUnhXRzUh6dvNzjQ/"                                                                  \
+  "XLqIh0S5o1eH6Q4JNhDPXqcCapzbz0NjFY61REckOlNajev8slI9mXG49mxi39gFhFAOME2Pbqp6w2kuG5N8X9gK+wvZ332RlUSIMJAYRDDYeShQU/" \
+  "bmHYODEgXyQ+kuOBtlMFHYyVuMRzdifNcAHi21zES14nzSUpHGn1LCV1mbCqJnDskYAl30EswA/a/r5/"                                   \
+  "DeFGwXMhvQyhwnCspd3Npx4zuosRMU+czbS/aS+p8DUBQ9OOZp6/iQZ4dPHKhmZqYp7iMsnpjuFGAEe8mIr2/"                              \
+  "S4SFZtTBK4R+uhUbhVePE8XbujQ2Z21F2UbUkZZK6PJMce0T2eLvAkDU/"                                                          \
+  "uM66H4asFPtgmp0eDxK9AkvhfqNOb9hFrfr4LQoXCEk2EOL39Gon42KZgPO8fbULxcrdt/"                                             \
+  "A2HS1Mf78s5rwcAZ9u2Jtj4F8ab4JsjoM23HdrKqvUfiNotSR6hyyCYTzUb1VyIubzJnVRCE+Xz5vdKREw6KaFEfHP95DbQ+"                   \
+  "jw4XfvObeLd4O4MbIRfb6a4TQfNsEDxQUHIczk+dqLGSTdR1k+O/"                                                               \
+  "AoXyMDSIaJsWuXKvYbY19e0RWlg7xsigx9shTcFvW0NPZZpDTxue+R2BgVT2nBlhzBVSvd9qyi8RUy2tvkh2m/"                             \
+  "K4+dYBw6W3Tgx+L1qwYMCHWI+lvgdCbN0Eojbj8izcil4zOWQ8LB+j0fd3g7mhQQMvzbtpi+"                                           \
+  "mrF7SpSGdZ3qyKdsV5by5em6ieUoEQm5K2OBDFhcIYqmjhJ2HliVUo3hwf66gF1bezDaPXCJKE9UfHoBOk1DfBJ/"                           \
+  "6+moMSIadhXY1dVX1LSpvKOBnppptVRunQf1EvMGTuOlS4wtExDbMT9hlnBdMIWdc9CT0O5R/3lBCowBCrfaWcl5Zrdx3cVZ45mDKjxjoiOyO/"     \
+  "bWXCMnAzq5W02LgKPSjPuGBxUQdc+hHCSbsyhQjQALEJgjx3uyxrgnNcE/P0LDHgnEJloyOdSsSSIr62pkyy0EPL1yxobUGnEKDcnsQN/"          \
+  "lVChqTfeFbY471HRRNfcT2bmQlFsOvwAlzYxY63hsvIw/RlHoxJv8OO8QvDgX59sDqlhYUcH6W/5Aonv0ySOs/"                             \
+  "ZTIiFqO0hblquxDYXkQJk4cCjp04K3wnX/YDENqJ4zQdShvlhGQ9jG+0iNm7xkNAQ09MqfODyZ92fuHa2EosakOnYArfNzp/"                   \
+  "fNHssbKtQchij5mlM0/XU4OqzWbsb3UJiVxTvAnGXFJkKVLSqjslsJC8EiRPWOMD6UR/cxQkswLVemE6VbcTS1UNW/"                         \
+  "ib6AQ34Y9i9Bo8cWA2JxBHHCz+fgJdbxYkECvs+J14yG3FYKq5lyP0lRjCJ8NaODFhKWWZnUd6bDzKjZeY0JGYxDC9GMyIkm4e+"                \
+  "XHj0XU27hIC0TM7ypXursRfPjJ2StaA89NJc3iQ5CaJ9dY40lfeACHfhje4mEzk4LShw0RonVSigpM7ia95hhNOFVJMIICp70frTio88B1oMY8IUXU" \
+  "ISxkiDDNrv1a91xAbDxViOw5epbPmYCO24OR9XvqVa6+79/bgnSSMc/lQKBIJNO8dshrsIY2Zizm9HD/IrttnLY5J5/"                        \
+  "TpPb2ZZa5rB3ji0wK2P0H34+LYlyVZRHbDAqhsy43u26eeJB5Y5tOAWBRrhDeIsWk4oFmfjZEgWmCgthaW1zSJsyYe5Q+"                      \
+  "ohGfI5Fr2buyT3c6tJp6j9HfMP68E5tBk6idke+mVz6T74oWTN5dybCgWq67+"                                                      \
+  "36mqeV4F43SGStLwR6zO6bgqBuVGCQ0IxSJ6tXMMgpv01jrOgmnd0wS62ljZHJ96Wx9MT6jX9LxA\",\"aesEncryptPublicKey\":"            \
+  "\"yYYhLRFIfqlz/sGEiswbGO+MRdAWUZSJJeMyGqRVqxneJa3oaJrUtFQWkG0sPXzAzOaRHFRErpZ2lPf9B45OHyAnfL77EvdPrziE8Pe+u63/"     \
+  "xjdRa/Rq5CCLuudipflMgZm8/"                                                                                          \
+  "TzqBQZTKdpnJ65b2el0ACywToZEUzSxlPxNlTcyrRf4UOmcbSOdgBhVYSSSRT3Ko09UhPBPT3XZdxTKtlFG5a4Rzq91L8MnYNhBb0NB56ES1+GGvM+" \
+  "q3pejCv5Hw81Cj/eMmOdUaFEOuq9M/"                                                                                     \
+  "iDD3nRlgNRU1PA1n0EgtR+"                                                                                             \
+  "uwYvRXfq766Jsvu1vls9aQHXxZ7VolXerGugqVkdbpRnPnltFecRojxvvEJlQ3hZistXSVJtR3Dr8qIqknjSh3PP0WN0mHPoggvG7He1v9Ml1UXNCj" \
+  "SO7jUFtcz7QHnDChaCz/VHp+skz8yGbwehovkdESyMRIipuHmMiWlsB6qWxAMGdi2uutz27JuIXGlQCbP8vnfW/"                            \
+  "N8E4jExUJQwH1yewqVelvrTcuSOI4dCO+Q==\",\"aesEncryptPrivateKey\":\"yYYhKi5zdqVw3eu7oMAZLr6QHNVud+"                   \
+  "GNJfM4H6RFwBvRJ4fdTJrMnVQgkG1dIWzo2sPjG3hEi5YvvYr6JqpbH3k3d8OUR/dl/"                                                \
+  "Tfmku+6zunk7CwSbf1N2UKXhY0E3aUch4SL1zCGQ09CGMx9ALlB9OIlNxG5Zp5cEzfTrP5qpy8R/"                                       \
+  "V7NJciJQCz6wRhSKAqWdSDJuG8Mx4ZIC0aUEjHQiTBG5vUA+odIPP4yf6NpNEBEvNtltLGYudX1zdKQFOJC0/"                              \
+  "8vz9apuexXPXkI7ssA1FbNs21bq9hps6kKzEYb7Hyfh46RVvqQ/Mw7oZdx2bdmanCRRvdtjUmgWMknZTRxnSPfkWhhT+1VqymSM69V2itH1fP/"     \
+  "Z6ND2gLPo7iergX4ptX7bOdGAv4gmaereN8oqJJaSUY6pliWqxwLIDuMMnP+v7+mrmiUy+4A7mmg/"                                      \
+  "PV9tTR8DRhgHh1mXQEjTk400eScTcPlpnaMs2uWNv1NO0lfTPssjt6lRdsk93tTCDh002CsqCW9p6KV1mbCqJnDskYAl30ni10IFfmgxXSgAFOOgfI" \
+  "e5XX8tJFUQpZ76eNBENUWSBW3/"                                                                                         \
+  "5KdxMPgHwRAXZ5RxhUg2ZfzVDuCh4orrfozmS6CF3Ms7R4Axd+QUyM1VTK8T5PeSNJCcd0tFpy7XT1bxnyxMlUxN56hX5oIjSfMF/"              \
+  "9UFFn6dI3m89I6QME5v16r04gTuIddgcGZ3EZQJbU0QJDmLGqhdZ2GSI7W1bsrAulpaDiHMId8tTOwbHJB8vcM71gjfvTAXuDcNrWq1bt7jMbnI5LE" \
+  "ztc2rNZAagXV6zXOaRwuzH6ZnK2briNtBpWA7c1NGhdjXsEBT07zkQmMgAoSS8b9edbjw+"                                             \
+  "8rGNYQZOynSU70p3vCCkLuXAkgDa3sZXkYsBagoAkC5OnJKuYlXpWSiYfX8IHeNXJ91wMfghk4om8Uykw+N/"                               \
+  "NNIBcdRcM2RiBZtGUx8U4DRutCmgOcK0fFptI61m/"                                                                          \
+  "K4+dYByjrvyNrzPJqkpw5G3ET2NlVOaRcP5r9mOW7DHF878Ku0L1ChQng9X+"                                                       \
+  "P4CcYxxTo0EWGy1jqnimnRHTjD9800YDfcg2dRHMvcXUCmtwKC14lHIWKg+"                                                        \
+  "DZxVgC4FI1Q4r4OWDJjl6GTgByNc8wIbEsohfaRbDlw2ckeOmM4EEqQR3uOT1GEqZllegXNzK/"                                         \
+  "cOEkoM+eorAO5zJmk0Lsb+V9onFNN1phtxvHE5ZC3lBCowBFpcLbAUxUi8kdGWsk1jbDtz2huuaO5In+"                                   \
+  "VNSmzKxA5FrEX6rGF6Sq0GZHdMpDFz3V9zIsbg7EFhG9jcaB+"                                                                  \
+  "0HNV2Du4av55WYt6NqNaBg0VIbir7kMzVo0ajuyjaI8gQKmUlBJGupXEELNQd1DZN/"                                                 \
+  "eBVRNcIHeWz9dG5iizw5yTxMq+2U1KzjfjnoJVuIOOPJ6flrS1KfUkUAQDWnDvogujYtSIr84AwBPO6+ShblquxerCSsnlYo2mPowOV8mKppKPs3/"  \
+  "1yFqagjeinV+zRmRutGG/n5ld1wTi9XR56NWUe728T1JaxfxVivjDy1CWNGBy7qsSa9EtsevE2zqcK+lu1PncnQvt09O+j3TCkROEw/"            \
+  "hljgk88qHWBIfXs88w3RsdjI4owaqUxhaKYdtSUJBbOGmq39lv89j1BgGMlRKBnFRQE/"                                               \
+  "bZkJYaCQMTA7424FnnVvUXI2ss27dwRjCJ8NfGgEGOzmnxWc9DBPC0tWBq6fV7xKmX+SqlQsh+Xn3/"                                     \
+  "nE2wDAR7R0g34i32vF9dk9XIpm1j48VSE286guWqMAwjErZCHPR2TCG2AqRrJqzvkBYv3ipsL1Bi6AQsUhzSXFoZdiUhzzwLCZg/"               \
+  "QQ4FJxLQWYpEiY2Z3INskWV2z8Hc2x3GGtTl9fdWzTIntVFU/yeQZnGz4H+sSylBcBgEgUdO8cKvxjRO5CvjTm9HD/"                         \
+  "LvvRIYqBdrefcDeb4Ca1BJXLo2AqBYk3Wv6LEzi99WnzFeqtCzpbn26WpHB8jieGYDBU05GaFqHwi2HC6maJ3CBvcpDW05Q7L8zccuS+/"          \
+  "yUvr+lexW+WR5O+NI6mLlH6dLYFTl/hqpAlhB+Tz8KbwuP2fDq51FC8Nn57B5uawWlsZ9zewPsrPSsfs3pUMJs4RUjJt/"                      \
+  "x1KtkMjx7vZ+lLouTDVyUDQ+l3mWppoHh9MT6jX9LxA\",\"selfEncryptionKey\":\"vR+w/lx9qitj/"                                \
+  "W2+SfFxbjeRM8VdaYGsxG6lxYCVQ0w=\",\"@alice🛠\":\"vR+w/lx9qitj/W2+SfFxbjeRM8VdaYGsxG6lxYCVQ0w=\"}"
 
 int main(int argc, char *argv[]) {
   int ret = 1;
@@ -98,7 +94,10 @@ int main(int argc, char *argv[]) {
   atclient atclient1;
   atclient_init(&atclient1);
 
-  if ((ret = atclient_atkeys_populate_from_string(&atkeys, ATKEYS_8INCANTEATER)) != 0) {
+  atclient_authenticate_options authenticate_options;
+  atclient_authenticate_options_init(&authenticate_options);
+
+  if ((ret = atclient_atkeys_populate_from_string(&atkeys, ATKEYS_STRING_ALICE)) != 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "failed to populate atkeys from string\n");
     goto exit;
   }
@@ -119,12 +118,12 @@ int main(int argc, char *argv[]) {
   atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_DEBUG, "is_enrollment_id_initialized: %d\n",
                atclient_atkeys_is_enrollment_id_initialized(&atkeys));
 
-  if ((ret = atclient_atkeys_write_to_path(&atkeys, ATKEYS_8INCANTEATER_1_FILE_PATH))) {
+  if ((ret = atclient_atkeys_write_to_path(&atkeys, ATKEYS_FILE_PATH_COPY))) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "failed to write to path\n");
     goto exit;
   }
 
-  if ((ret = atclient_atkeys_populate_from_path(&atkeys1, ATKEYS_8INCANTEATER_1_FILE_PATH))) {
+  if ((ret = atclient_atkeys_populate_from_path(&atkeys1, ATKEYS_FILE_PATH_COPY))) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "failed to populate from path\n");
     goto exit;
   }
@@ -171,17 +170,17 @@ int main(int argc, char *argv[]) {
     goto exit;
   }
 
-  if (strcmp(atkeys.apkam_symmetric_key_base64, atkeys1.apkam_symmetric_key_base64) != 0) {
-    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "apkam_symmetric_key_base64 mismatch\n");
+  if ((ret = atclient_authenticate_options_set_atdirectory_host(&authenticate_options, ATDIRECTORY_HOST)) != 0) {
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "failed to set atdirectory host\n");
     goto exit;
   }
 
-  if (strcmp(atkeys.enrollment_id, atkeys1.enrollment_id) != 0) {
-    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "enrollment_id mismatch\n");
+  if ((ret = atclient_authenticate_options_set_atdirectory_port(&authenticate_options, ATDIRECTORY_PORT)) != 0) {
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "failed to set atdirectory port\n");
     goto exit;
   }
 
-  if ((ret = atclient_pkam_authenticate(&atclient1, "@8incanteater", &atkeys1, NULL, NULL)) != 0) {
+  if ((ret = atclient_pkam_authenticate(&atclient1, ATSIGN, &atkeys1, &authenticate_options, NULL)) != 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "failed to pkam auth\n");
     goto exit;
   }
