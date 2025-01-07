@@ -153,6 +153,7 @@ exit: {
   atclient_connection_free(&atserver);
   atclient_atkeys_free(&atkeys);
   atclient_free(&atclient);
+  atclient_authenticate_options_free(&authenticate_options);
   free(path);
   return ret;
 }
