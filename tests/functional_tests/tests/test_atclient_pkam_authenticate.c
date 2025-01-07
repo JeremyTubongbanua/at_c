@@ -1,6 +1,6 @@
 #include "atclient/request_options.h"
-#include "functional_tests/config.h"
-#include "functional_tests/helpers.h"
+#include <functional_tests/config.h>
+#include <functional_tests/helpers.h>
 #include <atclient/atclient.h>
 #include <atclient/atclient_utils.h>
 #include <atclient/atkeys_file.h>
@@ -24,8 +24,8 @@ int main() {
   char *path = NULL;
 
   if ((ret = functional_tests_get_atkeys_path(FIRST_ATSIGN, &path)) != 0) {
-    atlogger_log("pkam_authenticate main", ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to get atkeys_sharedwith path: %d\n",
-                 ret);
+    atlogger_log("pkam_authenticate main", ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to get path for \"%s\": %d\n",
+                 FIRST_ATSIGN, ret);
     return ret;
   }
 
