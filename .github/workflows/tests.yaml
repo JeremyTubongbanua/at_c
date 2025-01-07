@@ -59,13 +59,18 @@ jobs:
 
       - name: Install atSDK
         run: |
-          cmake -S . -B build                           \
-            -DATSDK_BUILD_TESTS="func"                  \
-            -DCMAKE_BUILD_TYPE=Debug                    \
-            -DFIRST_ATSIGN="\"@alice🛠\""               \
-            -DSECOND_ATSIGN="\"@bob🛠\""                \
-            -DATDIRECTORY_HOST="\"vip.ve.atsign.zone\"" \
-            -DATDIRECTORY_PORT=64
+          cmake -S . -B build                                       \
+            -DATSDK_BUILD_TESTS="func"                              \
+            -DCMAKE_BUILD_TYPE=Debug                                \
+            -DATDIRECTORY_HOST="\"vip.ve.atsign.zone\""             \
+            -DATDIRECTORY_PORT=64                                   \
+            -DFIRST_ATSIGN="\"@alice🛠\""                           \
+            -DSECOND_ATSIGN="\"@bob🛠\""                            \
+            -DFIRST_ATSIGN_ATSERVER_HOST="\"vip.ve.atsign.zone\""   \
+            -DFIRST_ATSIGN_ATSERVER_PORT=25000                      \
+            -DSECOND_ATSIGN_ATSERVER_HOST="\"vip.ve.atsign.zone\""  \
+            -DSECOND_ATSIGN_ATSERVER_PORT=25003
+
           cmake --build build
 
       - name: Run Functional Tests
