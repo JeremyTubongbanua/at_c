@@ -49,22 +49,22 @@ cd tests/functional_tests/tools/virtualenv
 ./pkam_virtualenv.sh
 ```
 
-7. Now you can run the tests. Navigate back to the `tests/functional_tests/tools` directory.
+7. Now you can run the tests. Navigate back to the root of the project and run the following:
 
 ```bash
-cd ../
-```
-
-8. Run the `build.sh` script. This script will build the tests.
-
-```bash
-./build.sh
-```
-
-9. Run the `ctest.sh` script which will run ctest on the built binaries.
-
-```bash
-./ctest.sh
+cmake -S . -B build                                         \
+    -DATSDK_BUILD_TESTS="func"                              \
+    -DCMAKE_BUILD_TYPE=Debug                                \
+    -DATDIRECTORY_HOST="\"vip.ve.atsign.zone\""             \
+    -DATDIRECTORY_PORT=64                                   \
+    -DFIRST_ATSIGN="\"@alice🛠\""                           \
+    -DSECOND_ATSIGN="\"@bob🛠\""                            \
+    -DFIRST_ATSIGN_ATSERVER_HOST="\"vip.ve.atsign.zone\""   \
+    -DFIRST_ATSIGN_ATSERVER_PORT=25000                      \
+    -DSECOND_ATSIGN_ATSERVER_HOST="\"vip.ve.atsign.zone\""  \
+    -DSECOND_ATSIGN_ATSERVER_PORT=25003
+cmake --build build
+ctest --test-dir build/tests/functional_tests -VV --timeout 90 --output-on-failure
 ```
 
 The last few lines of the output should look something like this:
