@@ -114,7 +114,7 @@ static int test2_pkam_with_options(const char *path) {
   }
   atlogger_log(tag, ATLOGGER_LOGGING_LEVEL_INFO, "atclient_atkeys_populate_from_atkeys_file: %d\n", ret);
 
-  if ((ret = atclient_utils_find_atserver_address(ATDIRECTORY_HOST, ATDIRECTORY_PORT, atsign, &atserver_host,
+  if ((ret = atclient_utils_find_atserver_address(ATDIRECTORY_HOST, ATDIRECTORY_PORT, FIRST_ATSIGN, &atserver_host,
                                                   &atserver_port)) != 0) {
     atlogger_log(tag, ATLOGGER_LOGGING_LEVEL_ERROR, "atclient_utils_find_atserver_address: %d\n", ret);
     return ret;
