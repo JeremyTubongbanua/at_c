@@ -32,7 +32,6 @@ set(
   ${CMAKE_CURRENT_LIST_DIR}/src/request_options.c
   ${CMAKE_CURRENT_LIST_DIR}/src/string_utils.c
   # protected files
-  ${CMAKE_CURRENT_LIST_DIR}/src/atserver_message.h
   ${CMAKE_CURRENT_LIST_DIR}/src/atserver_message.c
 )
 
@@ -66,3 +65,7 @@ build_atsdk_package(
     INSTALL_TARGETS atlogger atcommons atchops mbedtls mbedx509 mbedcrypto everest p256m cjson
     BUILD_TESTS ${ATCLIENT_BUILD_TESTS}
 )
+
+if(ATCLIENT_BUILD_TESTS)
+  enable_testing()
+endif()

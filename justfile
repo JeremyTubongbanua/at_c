@@ -93,7 +93,9 @@ configure-test-unit:
     -DCMAKE_C_COMPILER=$C_COMPILER \
     -DCMAKE_C_FLAGS="-std=c99 -Wno-error " \
     -DATSDK_BUILD_TESTS="unit" \
-    -DATSDK_MEMCHECK=OFF
+    -DATSDK_MEMCHECK=OFF \
+    -DFIRST_ATSIGN="\"$FIRST_ATSIGN\"" \
+    -DSECOND_ATSIGN="\"$SECOND_ATSIGN\""
 
 configure-test-func:
   cmake -B $PWD/build/test-func -S $PWD \

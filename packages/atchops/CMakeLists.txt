@@ -48,3 +48,7 @@ build_atsdk_package(
     INSTALL_TARGETS atlogger mbedcrypto everest p256m
     BUILD_TESTS ${ATCHOPS_BUILD_TESTS}
 )
+
+if(ATCHOPS_BUILD_TESTS)
+  enable_testing()
+endif()
