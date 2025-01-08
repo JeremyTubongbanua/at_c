@@ -34,6 +34,7 @@ set(
   # protected files
   ${CMAKE_CURRENT_LIST_DIR}/src/atserver_message.h
   ${CMAKE_CURRENT_LIST_DIR}/src/atserver_message.c
+  ${CMAKE_CURRENT_LIST_DIR}/src/atdirectory.c
 )
 
 # Project setup
