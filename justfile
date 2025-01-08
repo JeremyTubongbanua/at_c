@@ -48,14 +48,14 @@ build-test-memcheck: configure-test-memcheck
 
 # TEST COMMANDS
 
-test-unit: build-test-unit
-  ctest --test-dir $PWD/build/test-unit
+test-unit +ARGS='': build-test-unit
+  ctest --test-dir $PWD/build/test-unit {{ARGS}}
 
-test-func: build-test-func
-  ctest --test-dir $PWD/build/test-func
+test-func +ARGS='': build-test-func
+  ctest --test-dir $PWD/build/test-func {{ARGS}}
 
-test-all: build-test-all
-  ctest --test-dir $PWD/build/test-all
+test-all +ARGS='': build-test-all
+  ctest --test-dir $PWD/build/test-all {{ARGS}}
 
 memcheck +ARGS='': build-test-memcheck
   ctest -T memcheck --test-dir $PWD/build/test-memcheck {{ARGS}}
