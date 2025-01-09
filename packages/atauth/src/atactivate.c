@@ -19,7 +19,9 @@
 
 #define TAG "activate_cli"
 
+#if defined(ATAUTH_BUILD_EXECUTABLES)
 int main(int argc, char *argv[]) { return atactivate(argc, argv); }
+#endif
 
 int atactivate(int argc, char *argv[]) {
   int ret = 0;

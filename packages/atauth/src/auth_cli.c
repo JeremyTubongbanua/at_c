@@ -27,7 +27,9 @@ int get_apkam_key(char **key, const char *key_name, atclient_connection *ctx, co
 int create_new_atserver_connection(atclient *ctx, const char *atsign, const atclient_authenticate_options *options);
 int atauth_validate_args(const char *otp, const char *app_name, const char *device_name, const char *namespaces_str);
 
+#if defined(ATAUTH_BUILD_EXECUTABLES)
 int main(int argc, char *argv[]) { return auth_cli(argc, argv); }
+#endif
 
 int auth_cli(int argc, char *argv[]) {
   atlogger_set_logging_level(ATLOGGER_LOGGING_LEVEL_INFO);
