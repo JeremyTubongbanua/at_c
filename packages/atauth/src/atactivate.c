@@ -5,6 +5,7 @@
 #include "atclient/atclient.h"
 #include "atclient/atkeys.h"
 #include "atclient/connection.h"
+#include <atauth/atactivate.h>
 #include <atauth/send_enroll_request.h>
 #include <atchops/aes.h>
 #include <atchops/aes_ctr.h>
@@ -18,7 +19,9 @@
 
 #define TAG "activate_cli"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) { return atactivate(argc, argv); }
+
+int atactivate(int argc, char *argv[]) {
   int ret = 0;
   char *atsign_temp = NULL, *cram_secret = NULL, *root_host = NULL, *atkeys_fp = NULL, *otp = NULL;
   int root_port = 0;
