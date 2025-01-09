@@ -68,6 +68,7 @@ memcheck-docker +ARGS='':
 
 configure-debug:
   cmake -B $PWD/build/debug -S $PWD \
+    -G "$GENERATOR" \
     -DCMAKE_INSTALL_PREFIX="$HOME/.local/" \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -DCMAKE_BUILD_TYPE=Debug \
@@ -78,6 +79,7 @@ configure-debug:
 
 configure-release:
   cmake -B $PWD/build/release -S $PWD \
+    -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_COMPILER=$C_COMPILER \
     -DCMAKE_C_FLAGS="-std=c99 -Wno-error" \
@@ -86,6 +88,7 @@ configure-release:
 
 configure-test-unit:
   cmake -B $PWD/build/test-unit -S $PWD \
+    -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_C_COMPILER=$C_COMPILER \
     -DCMAKE_C_FLAGS="-std=c99 -Wno-error " \
@@ -94,6 +97,7 @@ configure-test-unit:
 
 configure-test-func:
   cmake -B $PWD/build/test-func -S $PWD \
+    -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_C_COMPILER=$C_COMPILER \
     -DCMAKE_C_FLAGS="-std=c99 -Wno-error" \
@@ -110,6 +114,7 @@ configure-test-func:
 
 configure-test-all:
   cmake -B $PWD/build/test-all -S $PWD \
+    -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_C_COMPILER=$C_COMPILER \
     -DCMAKE_C_FLAGS="-std=c99 -Wno-error " \
@@ -120,6 +125,7 @@ configure-test-all:
 
 configure-test-memcheck:
   cmake -B $PWD/build/test-memcheck -S $PWD \
+    -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_C_COMPILER=$C_COMPILER \
     -DCMAKE_C_FLAGS="-std=gnu99 -Wno-error" \
@@ -133,6 +139,7 @@ configure-test-memcheck:
 
 show-env:
   echo "$C_COMPILER"
+  echo "$GENERATOR"
   echo "$ATDIRECTORY_HOST"
   echo "$ATDIRECTORY_PORT"
   echo "$FIRST_ATSIGN"
