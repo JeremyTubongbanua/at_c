@@ -10,6 +10,7 @@ set(
   ${CMAKE_CURRENT_LIST_DIR}/src/enroll_namespace.c
   ${CMAKE_CURRENT_LIST_DIR}/src/enroll_params.c
   ${CMAKE_CURRENT_LIST_DIR}/src/enroll_command_builder.c
+  ${CMAKE_CURRENT_LIST_DIR}/tests
 )
 
 # Project setup
@@ -17,107 +18,25 @@ cmake_minimum_required(VERSION 3.24)
 set(CMAKE_C_STANDARD 99)
 cmake_policy(SET CMP0135 NEW)
 
-## not adding the esp target yet
-
-project(
-  atcommons
-  VERSION 0.0.1
-  DESCRIPTION "Atsign technology common utilities and implementations"
-  HOMEPAGE_URL https://atsign.com
-  LANGUAGES C
-)
-
-if(NOT ESP_PLATFORM)
-  include(GNUInstallDirs)
-
-  # Determine if atchops is being built as a subproject using add_subdirectory()
-  if(NOT DEFINED ATCOMMONS_AS_SUBPROJECT)
-    set(ATCOMMONS_AS_SUBPROJECT ON)
-
-    if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-      set(ATCOMMONS_AS_SUBPROJECT OFF)
-    endif()
-  endif()
-
-  message(
-    STATUS
-    "[ATCOMMONS] ATCOMMONS_AS_SUBPROJECT: ${ATCOMMONS_AS_SUBPROJECT}"
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/package_util.cmake)
+if(ESP_PLATFORM)
+  add_atsdk_espidf_component(
+    PACKAGE_NAME atcommons
+    PACKAGE_DESCRIPTION "Atsign technology common utilities and implementations"
+    PACKAGE_VERSION 0.0.1
+    INCLUDE_DIR ${ATCOMMONS_INCLUDE_DIR}
+    PACKAGE_SOURCES ${ATCOMMONS_SOURCES}
   )
-
-  # Import cjson
-  if(NOT TARGET cjson)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/find_cjson.cmake)
-  endif()
-
-  # Import atlogger
-  if(NOT TARGET atlogger)
-    set(atlogger_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../atlogger)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/atlogger.cmake)
-  endif()
-
-  # Create library targets
-  if(NOT TARGET atcommons)
-    add_library(${PROJECT_NAME} STATIC ${ATCOMMONS_SOURCES})
-    add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
-  endif()
-
-  # LINK
-  # Link include headers to library targets
-  target_include_directories(
-    ${PROJECT_NAME}
-    PUBLIC
-      $<BUILD_INTERFACE:${ATCOMMONS_INCLUDE_DIR}>
-      $<BUILD_INTERFACE:${cjson_SOURCE_DIR}>
-      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  )
-
-  # Link dependencies to library targets
-  set(ATCOMMONS_INSTALL_TARGETS cjson atlogger)
-  target_link_libraries(${PROJECT_NAME} PUBLIC ${ATCOMMONS_INSTALL_TARGETS})
-
-  # INSTALL
-  # Install the include headers
-  install(
-    DIRECTORY ${ATCOMMONS_INCLUDE_DIR}/${PROJECT_NAME}
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  )
-
-  install(
-    FILES ${cJSON_SOURCE_DIR}/cJSON.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  )
-
-  # Install libraries to config target
-  install(
-    TARGETS ${PROJECT_NAME} ${ATCOMMONS_INSTALL_TARGETS}
-    EXPORT ${PROJECT_NAME}-config
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-
-  # EXPORT
-  if(NOT ATCOMMONS_AS_SUBPROJECT AND ATCOMMONS_EXPORT)
-    # Export the library
-    export(PACKAGE ${PROJECT_NAME})
-    # Install as a config.make
-    install(
-      EXPORT ${PROJECT_NAME}-config
-      NAMESPACE ${PROJECT_NAME}::
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-      FILE ${PROJECT_NAME}-config.cmake
-    )
-
-    #export the config.cmake
-    export(
-      EXPORT ${PROJECT_NAME}-config
-      NAMESPACE ${PROJECT_NAME}::
-      FILE "cmake/${PROJECT_NAME}-config.cmake"
-    )
-  endif()
-
-  if(ATCOMMONS_BUILD_TESTS)
-    message("[ATCOMMONS] Building tests")
-    enable_testing()
-    add_subdirectory(tests)
-  endif()
+  return()
 endif()
 
+build_atsdk_package(
+    PACKAGE_NAME atcommons
+    PACKAGE_DESCRIPTION "Atsign technology common utilities and implementations"
+    PACKAGE_VERSION 0.0.1
+    INCLUDE_DIR ${ATCOMMONS_INCLUDE_DIR}
+    PACKAGE_SOURCES ${ATCOMMONS_SOURCES}
+    EXTERNAL_DEPS cjson
+    INSTALL_TARGETS cjson
+    BUILD_TESTS ${ATCOMMONS_BUILD_TESTS}
+)

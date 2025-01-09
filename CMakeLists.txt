@@ -36,7 +36,7 @@ project(
   atsdk
   VERSION 0.0.1
   DESCRIPTION "Atsign's atSDK library"
-  HOMEPAGE_URL https://atsign.com
+  HOMEPAGE_URL https://github.com/atsign-foundation/at_c
   LANGUAGES C
 )
 

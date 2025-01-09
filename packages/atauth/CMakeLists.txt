@@ -29,132 +29,42 @@ project(
   LANGUAGES C
 )
 
-if(NOT ESP_PLATFORM)
-  include(GNUInstallDirs)
-
-  # Determine if atchops is being built as a subproject using add_subdirectory()
-  if(NOT DEFINED ATAUTH_AS_SUBPROJECT)
-    set(ATAUTH_AS_SUBPROJECT ON)
-
-    if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-      set(ATAUTH_AS_SUBPROJECT OFF)
-    endif()
-  endif()
-
-  message(STATUS "[ATAUTH] ATAUTH_AS_SUBPROJECT: ${ATAUTH_AS_SUBPROJECT}")
-
-  # Import cjson
-  if(NOT TARGET cjson)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/find_cjson.cmake)
-  endif()
-
-  # Import mbedtls
-  if(NOT TARGET mbedcrypto OR NOT TARGET everest OR NOT TARGET p256m)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/find_mbedtls.cmake)
-  endif()
-
-  # Import atlogger
-  if(NOT TARGET atlogger)
-    set(atlogger_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../atlogger)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/atlogger.cmake)
-  endif()
-
-  # Import atcommons
-  if(NOT TARGET atcommons)
-    set(atcommons_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../atcommons)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/atcommons.cmake)
-  endif()
-
-  # Import atclient
-  if(NOT TARGET atclient)
-    set(atclient_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../atclient)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/atclient.cmake)
-  endif()
-
-  # Create library targets
-  add_library(${PROJECT_NAME} STATIC ${ATAUTH_SOURCES})
-  add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
-
-  # LINK
-  # Link include headers to library targets
-  target_include_directories(
-    ${PROJECT_NAME}
-    PUBLIC
-      $<BUILD_INTERFACE:${ATAUTH_INCLUDE_DIR}>
-      $<BUILD_INTERFACE:${cjson_SOURCE_DIR}>
-      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/package_util.cmake)
+if(ESP_PLATFORM)
+  add_atsdk_espidf_component(
+    PACKAGE_NAME atauth
+    PACKAGE_DESCRIPTION "Atsign technology authentication library"
+    PACKAGE_VERSION 0.0.1
+    INCLUDE_DIR ${ATAUTH_INCLUDE_DIR}
+    PACKAGE_SOURCES ${ATAUTH_SOURCES}
+    DEPS json mbedtls atlogger atcommons atchops atclient
   )
+  return()
+endif()
 
-  set(
-    ATAUTH_INSTALL_TARGETS
-    cjson
-    mbedtls
-    mbedx509
-    mbedcrypto
-    everest
-    p256m
-    atclient
-    atcommons
-    atlogger
-    atchops
+build_atsdk_package(
+    PACKAGE_NAME atauth
+    PACKAGE_DESCRIPTION "Atsign technology authentication library"
+    PACKAGE_VERSION 0.0.1
+    PACKAGE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
+    INCLUDE_DIR ${ATAUTH_INCLUDE_DIR}
+    PACKAGE_SOURCES ${ATAUTH_SOURCES}
+    DEPS atlogger atcommons atchops atclient
+    EXTERNAL_DEPS mbedtls cjson
+    INSTALL_TARGETS cjson mbedtls mbedx509 mbedcrypto everest p256m atclient atcommons atlogger atchops
+    BUILD_TESTS ${ATCHOPS_BUILD_TESTS}
+)
+
+if(ATAUTH_BUILD_EXECUTABLES)
+  add_compile_definitions(-DATAUTH_BUILD_EXECUTABLES=1)
+  add_executable(atactivate ${CMAKE_CURRENT_LIST_DIR}/src/atactivate.c)
+  target_link_libraries(
+    atactivate
+    PRIVATE cjson atlogger atcommons atchops atclient atauth
   )
-  target_link_libraries(${PROJECT_NAME} PUBLIC ${ATAUTH_INSTALL_TARGETS})
-
-  # INSTALL
-  # Install the include headers
-  install(
-    DIRECTORY ${ATAUTH_INCLUDE_DIR}/${PROJECT_NAME}
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  add_executable(at_auth_cli ${CMAKE_CURRENT_LIST_DIR}/src/auth_cli.c)
+  target_link_libraries(
+    at_auth_cli
+    PRIVATE cjson atlogger atcommons atchops atclient atauth
   )
-
-  install(
-    FILES ${cJSON_SOURCE_DIR}/cJSON.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  )
-
-  # Install libraries to config target
-  install(
-    TARGETS ${PROJECT_NAME} ${ATAUTH_INSTALL_TARGETS}
-    EXPORT ${PROJECT_NAME}-config
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-
-  # Build atactivate executable
-  if(ATAUTH_BUILD_EXECUTABLES)
-    add_compile_definitions(-DATAUTH_BUILD_EXECUTABLES=1)
-    add_executable(atactivate ${CMAKE_CURRENT_LIST_DIR}/src/atactivate.c)
-    target_link_libraries(
-      atactivate
-      PRIVATE cjson atlogger atcommons atchops atclient atauth
-    )
-    add_executable(at_auth_cli ${CMAKE_CURRENT_LIST_DIR}/src/auth_cli.c)
-    target_link_libraries(
-      at_auth_cli
-      PRIVATE cjson atlogger atcommons atchops atclient atauth
-    )
-  endif()
-
-  # EXPORT
-  if(NOT ATAUTH_AS_SUBPROJECT)
-    # install as a config.make
-    install(
-      EXPORT ${PROJECT_NAME}-config
-      NAMESPACE ${PROJECT_NAME}::
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-      FILE ${PROJECT_NAME}-config.cmake
-    )
-
-    #export the config.cmake
-    export(
-      EXPORT ${PROJECT_NAME}-config
-      NAMESPACE ${PROJECT_NAME}::
-      FILE ${PROJECT_NAME}-config.cmake
-    )
-  endif()
-
-  # Build the tests - No tests for ATAUTH yet
-  # if(ATAUTH_BUILD_TESTS)
-  #   enable_testing()
-  #   add_subdirectory(tests)
-  # endif()
 endif()
