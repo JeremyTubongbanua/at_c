@@ -58,6 +58,7 @@ build_atsdk_package(
     PACKAGE_NAME atclient
     PACKAGE_DESCRIPTION "Atsign technology client library"
     PACKAGE_VERSION 0.0.1
+    PACKAGE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
     INCLUDE_DIR ${ATCLIENT_INCLUDE_DIR}
     PACKAGE_SOURCES ${ATCLIENT_SOURCES}
     DEPS atlogger atchops atcommons

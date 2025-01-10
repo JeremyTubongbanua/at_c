@@ -22,6 +22,9 @@ function(build_atsdk_package)
     "${multiValueArgs}"
   )
 
+  # make sure this is always unset at the start of the function
+  unset(cJSON_SOURCE_DIR)
+
   project(
     ${arg_PACKAGE_NAME}
     VERSION ${arg_PACKAGE_VERSION}
@@ -63,8 +66,16 @@ function(build_atsdk_package)
       ${PROJECT_NAME}
       PUBLIC
         $<BUILD_INTERFACE:${arg_INCLUDE_DIR}>
+        $<BUILD_INTERFACE:${cJSON_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+      target_include_directories(
+        ${PROJECT_NAME}
+        PUBLIC $<BUILD_INTERFACE:${arg_PACKAGE_DIR}/src>
+      )
+    endif()
 
     # Link dependencies to library targets
     target_link_libraries(${PROJECT_NAME} PUBLIC ${arg_INSTALL_TARGETS})

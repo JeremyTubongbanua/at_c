@@ -53,6 +53,10 @@ message(STATUS "[ATSDK] ATSDK_AS_SUBPROJECT: ${ATSDK_AS_SUBPROJECT}")
 message(STATUS "Building atlogger")
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/packages/atlogger)
 
+message(STATUS "Building atcommons")
+set(ATCOMMONS_BUILD_TESTS ${ATSDK_BUILD_UNIT_TESTS})
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/packages/atcommons)
+
 message(STATUS "Building atchops")
 set(ATCHOPS_BUILD_TESTS ${ATSDK_BUILD_UNIT_TESTS})
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/packages/atchops)

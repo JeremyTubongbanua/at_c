@@ -1,8 +1,3 @@
-# This installs the target cjson
-# Configurable variables
-set(CJSON_BUILD_SHARED_LIBS OFF CACHE BOOL "Build cjson shared libraries")
-option(ENABLE_CJSON_TEST "Enable tests for cjson" OFF)
-set(FETCHCONTENT_TRY_FIND_PACKAGE_MODE OPT_IN) # only try find_package if FIND_PACKAGE_ARGS is set
 if(NOT TARGET cjson)
   # This installs the target cjson
   # Configurable variables

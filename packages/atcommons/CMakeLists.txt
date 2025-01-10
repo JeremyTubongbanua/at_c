@@ -10,7 +10,6 @@ set(
   ${CMAKE_CURRENT_LIST_DIR}/src/enroll_namespace.c
   ${CMAKE_CURRENT_LIST_DIR}/src/enroll_params.c
   ${CMAKE_CURRENT_LIST_DIR}/src/enroll_command_builder.c
-  ${CMAKE_CURRENT_LIST_DIR}/tests
 )
 
 # Project setup
@@ -34,9 +33,11 @@ build_atsdk_package(
     PACKAGE_NAME atcommons
     PACKAGE_DESCRIPTION "Atsign technology common utilities and implementations"
     PACKAGE_VERSION 0.0.1
+    PACKAGE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
     INCLUDE_DIR ${ATCOMMONS_INCLUDE_DIR}
     PACKAGE_SOURCES ${ATCOMMONS_SOURCES}
+    DEPS atlogger
     EXTERNAL_DEPS cjson
-    INSTALL_TARGETS cjson
+    INSTALL_TARGETS cjson atlogger
     BUILD_TESTS ${ATCOMMONS_BUILD_TESTS}
 )

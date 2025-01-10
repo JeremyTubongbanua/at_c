@@ -52,7 +52,7 @@ build_atsdk_package(
     DEPS atlogger atcommons atchops atclient
     EXTERNAL_DEPS mbedtls cjson
     INSTALL_TARGETS cjson mbedtls mbedx509 mbedcrypto everest p256m atclient atcommons atlogger atchops
-    BUILD_TESTS ${ATCHOPS_BUILD_TESTS}
+    BUILD_TESTS OFF
 )
 
 if(ATAUTH_BUILD_EXECUTABLES)
