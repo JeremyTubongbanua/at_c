@@ -2,6 +2,7 @@
 
 #include <atauth/atactivate_arg_parser.h>
 #include <atauth/atauth_build_atkeys_file_path.h>
+#include <atauth/auth_cli.h>
 #include <atauth/send_enroll_request.h>
 #include <atchops/aes.h>
 #include <atchops/aes_ctr.h>
@@ -26,7 +27,11 @@ int get_apkam_key(char *key, unsigned char *iv, const char *key_name, atclient_c
 int create_new_atserver_connection(atclient *ctx, const char *atsign, const atclient_authenticate_options *options);
 int atauth_validate_args(const char *otp, const char *app_name, const char *device_name, const char *namespaces_str);
 
-int main(int argc, char *argv[]) {
+#if defined(ATAUTH_BUILD_EXECUTABLES)
+int main(int argc, char *argv[]) { return auth_cli(argc, argv); }
+#endif
+
+int auth_cli(int argc, char *argv[]) {
   atlogger_set_logging_level(ATLOGGER_LOGGING_LEVEL_INFO);
   int ret = 0, root_port = 0;
   char *atsign_temp = NULL, *root_host = NULL, *atkeys_fp = NULL, *otp = NULL, *app_name = NULL, *device_name = NULL,

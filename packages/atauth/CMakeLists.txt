@@ -121,14 +121,18 @@ if(NOT ESP_PLATFORM)
 
   # Build atactivate executable
   if(ATAUTH_BUILD_EXECUTABLES)
+    add_compile_definitions(-DATAUTH_BUILD_EXECUTABLES=1)
     add_executable(atactivate ${CMAKE_CURRENT_LIST_DIR}/src/atactivate.c)
     target_link_libraries(
       atactivate
       PRIVATE cjson atlogger atcommons atchops atclient atauth
     )
     add_executable(at_auth_cli ${CMAKE_CURRENT_LIST_DIR}/src/auth_cli.c)
-    target_link_libraries(at_auth_cli PRIVATE cjson atlogger atcommons atchops atclient atauth)
-  endif ()
+    target_link_libraries(
+      at_auth_cli
+      PRIVATE cjson atlogger atcommons atchops atclient atauth
+    )
+  endif()
 
   # EXPORT
   if(NOT ATAUTH_AS_SUBPROJECT)
@@ -154,4 +158,3 @@ if(NOT ESP_PLATFORM)
   #   add_subdirectory(tests)
   # endif()
 endif()
-
