@@ -70,7 +70,8 @@ int atauth_send_enroll_request(atclient *client, const atcommons_enroll_params_t
   /*
    * 4. Trim + json-decode + read enrollment-id and enrollment status from the server response
    */
-  if ((ret = atclient_string_utils_get_substring_position(recv, ATCLIENT_DATA_TOKEN, &recv_trimmed)) != 0) {
+  if ((ret = atclient_string_utils_get_substring_position((const char *)recv, ATCLIENT_DATA_TOKEN, &recv_trimmed)) !=
+      0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_DEBUG, "recv did not have prefix \"data:\"\n", (int)recv_len, recv);
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "%s\n", recv); // log error from server
     goto free_command_exit;
