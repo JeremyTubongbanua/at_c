@@ -41,156 +41,28 @@ cmake_minimum_required(VERSION 3.24)
 set(CMAKE_C_STANDARD 99)
 cmake_policy(SET CMP0135 NEW)
 
-# register as an espidf component
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/package_util.cmake)
 if(ESP_PLATFORM)
-  # Run special CMake commands for ESP32
-  idf_component_register(
-    SRCS ${ATCLIENT_SOURCES}
-    INCLUDE_DIRS ${ATCLIENT_INCLUDE_DIR}
-    REQUIRES mbedtls atchops json
+  add_atsdk_espidf_component(
+    PACKAGE_NAME atclient
+    PACKAGE_DESCRIPTION "Atsign technology client library"
+    PACKAGE_VERSION 0.0.1
+    INCLUDE_DIR ${ATCLIENT_INCLUDE_DIR}
+    PACKAGE_SOURCES ${ATCLIENT_SOURCES}
+    DEPS mbedtls atchops json
   )
-
-  # Copy header files to include directory and libraries to lib directory
-  add_custom_command(
-    TARGET ${COMPONENT_LIB}
-    POST_BUILD
-    COMMAND
-      ${CMAKE_COMMAND} -E copy_directory ${ATCLIENT_INCLUDE_DIR}
-      ${CMAKE_SOURCE_DIR}/include
-    COMMAND
-      ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${COMPONENT_LIB}>
-      ${CMAKE_SOURCE_DIR}/lib/lib${COMPONENT_NAME}.a
-    COMMENT "Copying built archive file and header to lib directory..."
-  )
+  return()
 endif()
 
-project(
-  atclient
-  VERSION 0.0.1
-  DESCRIPTION "Atsign technology client library"
-  HOMEPAGE_URL https://atsign.com
-  LANGUAGES C
+build_atsdk_package(
+    PACKAGE_NAME atclient
+    PACKAGE_DESCRIPTION "Atsign technology client library"
+    PACKAGE_VERSION 0.0.1
+    PACKAGE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
+    INCLUDE_DIR ${ATCLIENT_INCLUDE_DIR}
+    PACKAGE_SOURCES ${ATCLIENT_SOURCES}
+    DEPS atlogger atchops atcommons
+    EXTERNAL_DEPS mbedtls cjson
+    INSTALL_TARGETS atlogger atcommons atchops mbedtls mbedx509 mbedcrypto everest p256m cjson
+    BUILD_TESTS ${ATCLIENT_BUILD_TESTS}
 )
-
-if(NOT ESP_PLATFORM)
-  include(GNUInstallDirs)
-
-  # Determine if atclient is being built as a subproject
-  if(NOT DEFINED ATCLIENT_AS_SUBPROJECT)
-    set(ATCLIENT_AS_SUBPROJECT ON)
-
-    if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-      set(ATCLIENT_AS_SUBPROJECT OFF)
-    endif()
-  endif()
-
-  message(STATUS "[ATCLIENT] ATCLIENT_AS_SUBPROJECT: ${ATCLIENT_AS_SUBPROJECT}")
-
-  # Import mbedtls
-  if(NOT TARGET mbedcrypto)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/find_mbedtls.cmake)
-  endif()
-
-  # Import cjson
-  if(NOT TARGET cjson)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/find_cjson.cmake)
-  endif()
-
-  # Import atlogger
-  if(NOT TARGET atlogger)
-    set(atlogger_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../atlogger)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/atlogger.cmake)
-  endif()
-
-  # Import atchops
-  if(NOT TARGET atchops)
-    set(atchops_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../atchops)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/atchops.cmake)
-  endif()
-
-  # Import atcommons
-  if(NOT TARGET atcommons)
-    set(atcommons_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../atcommons)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/atcommons.cmake)
-  endif()
-
-  # Create library targets
-  add_library(${PROJECT_NAME} STATIC ${ATCLIENT_SOURCES})
-  add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
-
-  # LINK
-  # Link include headers to library targets
-  target_include_directories(
-    ${PROJECT_NAME}
-    PUBLIC
-      $<BUILD_INTERFACE:${ATCLIENT_INCLUDE_DIR}>
-      $<BUILD_INTERFACE:${cjson_SOURCE_DIR}>
-      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-  )
-
-  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_include_directories(
-      ${PROJECT_NAME}
-      PUBLIC $<BUILD_INTERFACE:${ATCLIENT_PROTECTED_INCLUDE_DIR}>
-    )
-  endif()
-
-  # Link dependencies to library targets
-  set(
-    ATCLIENT_INSTALL_TARGETS
-    atlogger
-    atcommons
-    atchops
-    mbedtls
-    mbedx509
-    mbedcrypto
-    everest
-    p256m
-    cjson
-  )
-  target_link_libraries(${PROJECT_NAME} PUBLIC ${ATCLIENT_INSTALL_TARGETS})
-
-  # INSTALL
-  # Install the include headers
-  install(
-    DIRECTORY ${ATCLIENT_INCLUDE_DIR}/${PROJECT_NAME}
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  )
-  install(
-    FILES ${cjson_SOURCE_DIR}/cJSON.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  )
-
-  # Install libraries to config target
-  install(
-    TARGETS ${ATCLIENT_INSTALL_TARGETS}
-    EXPORT ${PROJECT_NAME}-config
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
-
-  # EXPORT
-  if(NOT ATCLIENT_AS_SUBPROJECT AND ATCLIENT_EXPORT)
-    # Export the library
-
-    # install as a config.cmake
-    install(
-      EXPORT ${PROJECT_NAME}-config
-      NAMESPACE ${PROJECT_NAME}::
-      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-      FILE ${PROJECT_NAME}-config.cmake
-    )
-
-    # export the config.cmake
-    export(
-      EXPORT ${PROJECT_NAME}-config
-      NAMESPACE ${PROJECT_NAME}::
-      FILE ${PROJECT_NAME}-config.cmake
-    )
-  endif()
-
-  # Build the tests
-  if(ATCLIENT_BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/tests)
-  endif()
-endif()

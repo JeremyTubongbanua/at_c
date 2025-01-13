@@ -36,7 +36,7 @@ project(
   atsdk
   VERSION 0.0.1
   DESCRIPTION "Atsign's atSDK library"
-  HOMEPAGE_URL https://atsign.com
+  HOMEPAGE_URL https://github.com/atsign-foundation/at_c
   LANGUAGES C
 )
 
@@ -52,6 +52,10 @@ message(STATUS "[ATSDK] ATSDK_AS_SUBPROJECT: ${ATSDK_AS_SUBPROJECT}")
 # install each package
 message(STATUS "Building atlogger")
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/packages/atlogger)
+
+message(STATUS "Building atcommons")
+set(ATCOMMONS_BUILD_TESTS ${ATSDK_BUILD_UNIT_TESTS})
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/packages/atcommons)
 
 message(STATUS "Building atchops")
 set(ATCHOPS_BUILD_TESTS ${ATSDK_BUILD_UNIT_TESTS})
