@@ -54,7 +54,8 @@ static int test_1_find_atserver_address_should_pass() {
   atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_INFO, "atserver_port: %d\n", atserver_port);
 
   if (strcmp(atserver_host, expected_host) != 0) {
-    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "atserver_host doesn't match\n");
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "atserver_host is %s (expected: %s)\n", atserver_host,
+                 expected_host);
     ret = 1;
     goto exit;
   }
@@ -82,8 +83,8 @@ static int test_2_find_atserver_address_should_fail() {
   char *atserver_host = NULL;
   int atserver_port = 0;
 
-  if ((ret = atclient_utils_find_atserver_address(ATDIRECTORY_HOST, ATDIRECTORY_PORT, UNDEFINED_ATSIGN_WITHOUT_AT, &atserver_host,
-                                                  &atserver_port)) == 0) {
+  if ((ret = atclient_utils_find_atserver_address(ATDIRECTORY_HOST, ATDIRECTORY_PORT, UNDEFINED_ATSIGN_WITHOUT_AT,
+                                                  &atserver_host, &atserver_port)) == 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR,
                  "atclient_find_atserver_address passed with exit code 0, when it was expected to fail... %d\n", ret);
     goto exit;

@@ -1,4 +1,3 @@
-#include "functional_tests/config.h"
 #include "functional_tests/helpers.h"
 #include <atclient/atclient.h>
 #include <atclient/constants.h>

@@ -28,7 +28,13 @@ void atdirectory_connection_free(struct atdirectory_connection *conn) {
 
 int atdirectory_lookup(struct atdirectory_connection *conn, const char *atsign, char **atserver_host,
                        uint16_t *atserver_port) {
-  int ret = atclient_tls_socket_connect(&conn->socket, conn->host, conn->port);
+  int ret = atclient_tls_socket_configure(&conn->socket, NULL, 0);
+  if (ret != 0) {
+    atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to configure tls for %s:%d", conn->host, conn->port);
+    return ret;
+  }
+
+  ret = atclient_tls_socket_connect(&conn->socket, conn->host, conn->port);
   if (ret != 0) {
     atlogger_log(TAG, ATLOGGER_LOGGING_LEVEL_ERROR, "Failed to connect to %s:%u\n", conn->host, conn->port);
     return ret;
