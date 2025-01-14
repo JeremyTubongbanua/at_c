@@ -41,3 +41,7 @@ build_atsdk_package(
     INSTALL_TARGETS cjson atlogger
     BUILD_TESTS ${ATCOMMONS_BUILD_TESTS}
 )
+
+if(ATCOMMONS_BUILD_TESTS)
+  enable_testing()
+endif()

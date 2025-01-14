@@ -9,9 +9,9 @@ set dotenv-load
 
 # SETUP COMMANDS
 
-setup: configure-debug configure-test-func
-  ln -s $PWD/build/debug/compile_commands.json $PWD
-  ln -s $PWD/build/test-func/compile_commands.json $PWD/tests
+setup: configure-test-all
+  ln -s $PWD/build/test-all/compile_commands.json $PWD
+  ln -s $PWD/build/test-all/compile_commands.json $PWD/tests
 
 setup-memcheck-docker:
   docker build --platform linux/amd64 -t atc-memcheck-docker:latest -f $PWD/valgrind.Dockerfile $PWD
@@ -70,7 +70,6 @@ configure-debug:
   cmake -B $PWD/build/debug -S $PWD \
     -G "$GENERATOR" \
     -DCMAKE_INSTALL_PREFIX="$HOME/.local/" \
-    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_C_COMPILER=$C_COMPILER \
     -DCMAKE_C_FLAGS="-std=c99 -Wno-error" \
@@ -93,7 +92,9 @@ configure-test-unit:
     -DCMAKE_C_COMPILER=$C_COMPILER \
     -DCMAKE_C_FLAGS="-std=c99 -Wno-error " \
     -DATSDK_BUILD_TESTS="unit" \
-    -DATSDK_MEMCHECK=OFF
+    -DATSDK_MEMCHECK=OFF \
+    -DFIRST_ATSIGN="\"$FIRST_ATSIGN\"" \
+    -DSECOND_ATSIGN="\"$SECOND_ATSIGN\""
 
 configure-test-func:
   cmake -B $PWD/build/test-func -S $PWD \
@@ -115,6 +116,7 @@ configure-test-func:
 configure-test-all:
   cmake -B $PWD/build/test-all -S $PWD \
     -G "$GENERATOR" \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_C_COMPILER=$C_COMPILER \
     -DCMAKE_C_FLAGS="-std=c99 -Wno-error " \
