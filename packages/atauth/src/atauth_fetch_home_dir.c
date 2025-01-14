@@ -11,14 +11,6 @@
 #define PATH_SEPARATOR '\\'
 #define PATH_MAX 260 // Max path length for Windows (adjustable if needed)
 
-// Imports for Linux
-#elif defined(__linux__)
-#include <linux/limits.h>
-#include <pwd.h>
-#include <unistd.h>
-#define PATH_SEPARATOR '/'
-
-// Imports for other platforms
 #else
 #include <limits.h>
 #include <pwd.h>
