@@ -238,10 +238,6 @@ int atclient_pkam_authenticate(atclient *ctx, const char *atsign, const atclient
 
   bool should_free_atserver_host = false;
 
-  // expected result on a successful login
-  size_t expected_len = 1 + strlen(atsign) + strlen("@data:success");
-  char expected_buf[expected_len];
-
   /*
    * 3. Ensure that the atsign has the @ symbol.
    */
