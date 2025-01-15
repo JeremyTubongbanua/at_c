@@ -79,7 +79,7 @@ int atdirectory_lookup(struct atdirectory_connection *conn, const char *atsign, 
     len--;
   }
 
-  if (len == 5 && strncmp((char *)buf, "null", 4) == 0) {
+  if (len == 4 && strncmp((char *)buf, "null", 4) == 0) {
     *atserver_host = NULL;
     *atserver_port = 0;
     free(read_buf);
